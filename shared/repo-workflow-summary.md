@@ -1,7 +1,8 @@
 # Repo Workflow Summary
 
-- Default target branch: `main`.
-- Working branch pattern: `feat/<dept>/<short-slice-task>`.
-- `### Push Request` is manager-only and should be opened against `main` as soon as a coherent reviewable increment is ready.
-- No `develop`, release, or extra branch workflow for this phase.
-- Remote setup matters only if it blocks active work on the current increment.
+- Suspend push / `### Push Request` workflow guidance until the repository URL is corrected.
+- Continue on existing local feature branches or local workspace increments for the current task.
+- Intended working branch pattern: `feat/<dept>/<short-slice-task>`.
+- Intended target branch: `main`.
+- Put intended branch/target notes in manager status updates until repo access is corrected.
+- Mention repo-access status only when it materially affects active engineering work.

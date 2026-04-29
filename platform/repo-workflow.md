@@ -1,16 +1,21 @@
 # Repository Workflow Guidance
 
-## Branches
-- Default target branch: `main`.
-- Managers should do active work on a department-scoped branch named `feat/<dept>/<short-slice-task>`.
-- Example: `feat/frontend/review-room-shell`.
+## Current Remote Status
+- Push / `### Push Request` workflow guidance is suspended until the repository URL is corrected.
+- Do not treat repo access as an active workstream unless it is materially blocking current engineering execution.
 
-## Push Requests
-- Only managers should issue a `### Push Request`.
-- A manager should emit `### Push Request` against `main` as soon as a coherent, reviewable increment is ready.
-- Do not wait for a larger release batch or extra workflow stage.
+## Local Working Pattern
+- Managers should continue work on their existing local feature branches when already in progress.
+- If no local branch is already in use, managers may continue as a local workspace increment scoped to the current task.
+- Intended branch shape remains `feat/<dept>/<short-slice-task>`.
+- Intended target branch remains `main`.
 
-## Current Phase Scope
-- Use only the minimal feature-branch workflow above for this create→review→share phase.
-- Do not introduce `develop`, release branches, or other extra branch workflow for this phase.
-- Remote setup should only be handled if it is blocking active work on the current increment.
+## Status Update Notes
+- Until the repository URL is corrected, capture intended branch and PR target notes in manager status updates instead of issuing `### Push Request`.
+- Keep those notes concrete and minimal, for example:
+  - intended branch: `feat/frontend/review-room-shell`
+  - intended target: `main`
+
+## Scope Control
+- Surface repo-access facts only when they materially affect active engineering execution on the current increment.
+- Do not expand this into release, develop, or broader repo-process workflow for this phase.
