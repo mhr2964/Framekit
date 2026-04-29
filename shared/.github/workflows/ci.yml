@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  placeholder-ci:
+    name: Placeholder CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Repo note
+        run: |
+          echo "Framekit CI scaffold is active for https://github.com/mhr2964/Framekit.git"
+          echo "No build/test commands are defined yet because the application stack has not been confirmed."

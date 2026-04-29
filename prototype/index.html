@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Framekit Prototype</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">F</div>
+        <div>
+          <div class="brand-name">Framekit</div>
+          <div class="brand-tag">Review rooms for live product pages</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-link active" type="button" data-screen-target="landing">Overview</button>
+        <button class="nav-link" type="button" data-screen-target="create">Create room</button>
+        <button class="nav-link" type="button" data-screen-target="review">Review room</button>
+      </nav>
+
+      <div class="sidebar-card">
+        <div class="eyebrow">What this prototype shows</div>
+        <ul class="mini-list">
+          <li>Clear landing explanation</li>
+          <li>Guided room setup with states</li>
+          <li>In-context comments on a web mock</li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="screen active" id="screen-landing" data-screen="landing">
+        <header class="hero">
+          <div class="hero-copy">
+            <div class="eyebrow">Review web work in context</div>
+            <h1>Framekit turns any page into a shared review room.</h1>
+            <p class="lede">
+              Drop in a URL, invite collaborators, and leave comments directly on the interface instead of in scattered docs and screenshots.
+            </p>
+            <div class="hero-actions">
+              <button class="btn btn-primary" type="button" data-go-screen="create">Create a room</button>
+              <button class="btn btn-secondary" type="button" data-go-screen="review">See a review example</button>
+            </div>
+          </div>
+
+          <div class="hero-card surface">
+            <div class="window-bar">
+              <span></span><span></span><span></span>
+            </div>
+            <div class="hero-preview">
+              <div class="preview-browser">
+                <div class="preview-url">https://framekit.app/pricing</div>
+                <div class="preview-page">
+                  <div class="preview-nav"></div>
+                  <div class="preview-title"></div>
+                  <div class="preview-copy"></div>
+                  <div class="preview-copy short"></div>
+                  <div class="preview-card-row">
+                    <div class="preview-card-block"></div>
+                    <div class="preview-card-block"></div>
+                    <div class="preview-card-block"></div>
+                  </div>
+                  <div class="pin-demo pin-a">1</div>
+                  <div class="pin-demo pin-b">2</div>
+                  <div class="pin-demo pin-c">3</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <section class="feature-grid">
+          <article class="surface feature-card">
+            <div class="feature-icon">01</div>
+            <h2>Capture the page as collaborators see it</h2>
+            <p>Each room anchors discussion to a specific URL, viewport, and snapshot so feedback stays grounded in the actual interface.</p>
+          </article>
+
+          <article class="surface feature-card">
+            <div class="feature-icon">02</div>
+            <h2>Comment directly on the interface</h2>
+            <p>Click anywhere on the page mock to inspect pins, read threads, move between comments, and resolve issues without losing context.</p>
+          </article>
+
+          <article class="surface feature-card">
+            <div class="feature-icon">03</div>
+            <h2>Move from request to decision faster</h2>
+            <p>Open and resolved states make it obvious what still needs design or engineering follow-up before a room is ready to close.</p>
+          </article>
+        </section>
+
+        <section class="surface journey-card">
+          <div class="journey-header">
+            <div>
+              <div class="eyebrow">Typical flow</div>
+              <h2>From page link to aligned review</h2>
+            </div>
+            <button class="btn btn-ghost" type="button" data-go-screen="create">Start with room setup</button>
+          </div>
+
+          <div class="journey-steps">
+            <div class="journey-step">
+              <div class="step-number">1</div>
+              <h3>Name the room</h3>
+              <p>Choose the page to review, add a concise room title, and set the initial reviewers.</p>
+            </div>
+            <div class="journey-step">
+              <div class="step-number">2</div>
+              <h3>Share the review link</h3>
+              <p>Invite product, design, and engineering into the same room with one focused brief.</p>
+            </div>
+            <div class="journey-step">
+              <div class="step-number">3</div>
+              <h3>Resolve feedback in context</h3>
+              <p>Track what is still open, what changed, and what already has alignment.</p>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="screen" id="screen-create" data-screen="create">
+        <div class="screen-header">
+          <div>
+            <div class="eyebrow">Room creation</div>
+            <h1>Create a review room</h1>
+            <p>Set up a realistic review session for a live webpage in a few steps.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary" type="button" data-go-screen="landing">Back to overview</button>
+            <button class="btn btn-primary" type="button" data-go-screen="review">Open example room</button>
+          </div>
+        </div>
+
+        <div class="create-layout">
+          <form class="surface form-card" id="room-form">
+            <div class="form-section">
+              <label class="field">
+                <span>Room name</span>
+                <input id="room-name" name="roomName" type="text" placeholder="Spring pricing review" />
+                <small>Use a clear title collaborators can recognize later.</small>
+              </label>
+
+              <label class="field">
+                <span>Page URL</span>
+                <input id="room-url" name="roomUrl" type="url" placeholder="https://example.com/pricing" />
+                <small>Framekit reviews a specific live page or prototype URL.</small>
+              </label>
+
+              <label class="field">
+                <span>Review goal</span>
+                <textarea id="room-goal" name="roomGoal" rows="4" placeholder="What should reviewers focus on?"></textarea>
+                <small>Example: Validate hierarchy and CTA clarity before handoff.</small>
+              </label>
+            </div>
+
+            <div class="form-section split">
+              <label class="field">
+                <span>Reviewers</span>
+                <input id="room-reviewers" name="roomReviewers" type="text" placeholder="maya@framekit.app, alex@framekit.app" />
+                <small>Comma-separated emails are enough for this prototype.</small>
+              </label>
+
+              <label class="field">
+                <span>Viewport</span>
+                <select id="room-viewport" name="roomViewport">
+                  <option value="desktop">Desktop · 1440px</option>
+                  <option value="tablet">Tablet · 1024px</option>
+                  <option value="mobile">Mobile · 390px</option>
+                </select>
+                <small>Rooms anchor comments to a chosen viewing context.</small>
+              </label>
+            </div>
+
+            <div class="form-section">
+              <span class="field-label">Review options</span>
+              <label class="check-row">
+                <input id="option-snapshot" type="checkbox" checked />
+                <span>Capture a snapshot for stable review pins</span>
+              </label>
+              <label class="check-row">
+                <input id="option-notify" type="checkbox" checked />
+                <span>Notify reviewers as soon as the room is created</span>
+              </label>
+              <label class="check-row">
+                <input id="option-resolve" type="checkbox" />
+                <span>Require all comments to be resolved before closeout</span>
+              </label>
+            </div>
+
+            <div class="form-feedback" id="form-feedback" aria-live="polite"></div>
+
+            <div class="form-actions">
+              <button class="btn btn-secondary" type="button" id="prefill-button">Use sample data</button>
+              <button class="btn btn-primary" type="submit" id="create-button">Create room</button>
+            </div>
+          </form>
+
+          <aside class="surface summary-card">
+            <div class="eyebrow">Live summary</div>
+            <h2 id="summary-name">Untitled review room</h2>
+            <dl class="summary-list">
+              <div>
+                <dt>Page</dt>
+                <dd id="summary-url">No URL yet</dd>
+              </div>
+              <div>
+                <dt>Goal</dt>
+                <dd id="summary-goal">Add a short review brief to align the room.</dd>
+              </div>
+              <div>
+                <dt>Reviewers</dt>
+                <dd id="summary-reviewers">No reviewers added</dd>
+              </div>
+              <div>
+                <dt>Viewport</dt>
+                <dd id="summary-viewport">Desktop · 1440px</dd>
+              </div>
+            </dl>
+
+            <div class="status-stack">
+              <div class="status-card">
+                <span class="status-dot neutral"></span>
+                <div>
+                  <strong>Draft</strong>
+                  <p>Complete the fields to generate a room link.</p>
+                </div>
+              </div>
+              <div class="status-card success hidden" id="created-state">
+                <span class="status-dot success"></span>
+                <div>
+                  <strong>Room created</strong>
+                  <p id="created-message">Your review room will appear here once created.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="link-preview hidden" id="room-link-card">
+              <div class="eyebrow">Room link</div>
+              <div class="link-row">
+                <code id="room-link">framekit.app/review/fk-demo-room</code>
+                <button class="btn btn-ghost small" type="button" data-go-screen="review">Open</button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-review" data-screen="review">
+        <div class="screen-header">
+          <div>
+            <div class="eyebrow">In-context review</div>
+            <h1>Pricing page review room</h1>
+            <p>Explore open and resolved comments pinned directly to the page mock.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-secondary" type="button" data-go-screen="create">Create another room</button>
+          </div>
+        </div>
+
+        <div class="review-toolbar surface">
+          <div class="toolbar-meta">
+            <div class="meta-chip">Room ID · fk-pricing-q2</div>
+            <div class="meta-chip">Viewport · Desktop</div>
+            <div class="meta-chip">5 comments</div>
+          </div>
+          <div class="toolbar-actions">
+            <button class="filter-chip active" type="button" data-filter="all">All</button>
+            <button class="filter-chip" type="button" data-filter="open">Open</button>
+            <button class="filter-chip" type="button" data-filter="resolved">Resolved</button>
+          </div>
+        </div>
+
+        <div class="review-layout">
+          <section class="surface page-stage">
+            <div class="window-bar">
+              <span></span><span></span><span></span>
+            </div>
+            <div class="mock-page">
+              <div class="mock-header">
+                <div class="mock-logo">framekit</div>
+                <div class="mock-nav">
+                  <span>Product</span>
+                  <span>Pricing</span>
+                  <span>Docs</span>
+                  <span>Login</span>
+                </div>
+              </div>
+
+              <div class="mock-hero">
+                <div class="mock-hero-copy">
+                  <div class="mock-kicker">Pricing built for review teams</div>
+                  <h2>Review faster with one calm place for product feedback.</h2>
+                  <p>Collaborate on real pages, align on decisions, and close loops without scattered screenshots.</p>
+                  <div class="mock-cta-row">
+                    <div class="mock-button primary"></div>
+                    <div class="mock-button secondary"></div>
+                  </div>
+                </div>
+                <div class="mock-hero-panel"></div>
+              </div>
+
+              <div class="mock-plan-grid">
+                <div class="mock-plan-card highlighted"></div>
+                <div class="mock-plan-card"></div>
+                <div class="mock-plan-card"></div>
+              </div>
+
+              <button class="comment-pin active open" type="button" style="top: 19%; left: 62%;" data-comment-id="1">1</button>
+              <button class="comment-pin open" type="button" style="top: 33%; left: 38%;" data-comment-id="2">2</button>
+              <button class="comment-pin resolved" type="button" style="top: 58%; left: 28%;" data-comment-id="3">3</button>
+              <button class="comment-pin open" type="button" style="top: 61%; left: 60%;" data-comment-id="4">4</button>
+              <button class="comment-pin resolved" type="button" style="top: 77%; left: 76%;" data-comment-id="5">5</button>
+            </div>
+          </section>
+
+          <aside class="surface comments-panel">
+            <div class="panel-header">
+              <div>
+                <div class="eyebrow">Comment thread</div>
+                <h2 id="comment-title">Clarify the enterprise CTA hierarchy</h2>
+              </div>
+              <span class="thread-status open" id="thread-status">Open</span>
+            </div>
+
+            <div class="comment-nav">
+              <button class="btn btn-ghost small" type="button" id="prev-comment">Previous</button>
+              <div class="comment-count" id="comment-count">Comment 1 of 5</div>
+              <button class="btn btn-ghost small" type="button" id="next-comment">Next</button>
+            </div>
+
+            <article class="thread-card">
+              <div class="thread-meta">
+                <div class="avatar">M</div>
+                <div>
+                  <strong id="comment-author">Maya</strong>
+                  <div class="thread-submeta" id="comment-location">Hero CTA · 10:24 AM</div>
+                </div>
+              </div>
+              <p id="comment-body">
+                The “Talk to sales” action is visually quieter than the primary trial CTA, but enterprise buyers are a major audience here. Consider increasing contrast or repositioning it closer to the pricing intro.
+              </p>
+            </article>
+
+            <div class="reply-stack" id="reply-stack">
+              <article class="reply-card">
+                <div class="thread-meta">
+                  <div class="avatar subtle">A</div>
+                  <div>
+                    <strong>Alex</strong>
+                    <div class="thread-submeta">Product · 10:41 AM</div>
+                  </div>
+                </div>
+                <p>Agree. We can test a stronger secondary button treatment and keep the trial CTA primary.</p>
+              </article>
+            </div>
+
+            <div class="panel-footer">
+              <div class="resolution-row">
+                <button class="btn btn-secondary small" type="button" id="toggle-status">Mark resolved</button>
+                <button class="btn btn-primary small" type="button" data-go-screen="create">Create new room</button>
+              </div>
+              <div class="thread-note">Pins update with the selected comment. Resolved items remain visible for audit history.</div>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
