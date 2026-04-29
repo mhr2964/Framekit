@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import {
   createRoom,
   type CreateRoomApiError,
+  type CreateRoomFieldErrors,
   type CreateRoomRequest,
   type CreateRoomResponse,
 } from './lib/createRoom';
@@ -15,12 +16,6 @@ interface CreateRoomFormValues {
   note: string;
 }
 
-interface CreateRoomFieldErrors {
-  name?: string;
-  url?: string;
-  note?: string;
-}
-
 type CreateRoomStatus = 'idle' | 'submitting' | 'success' | 'error';
 
 const INITIAL_VALUES: CreateRoomFormValues = {
@@ -28,6 +23,8 @@ const INITIAL_VALUES: CreateRoomFormValues = {
   url: '',
   note: '',
 };
+
+const NOTE_CHARACTER_LIMIT = 280;
 
 function isValidHttpUrl(value: string) {
   try {
@@ -51,8 +48,8 @@ function validateValues(values: CreateRoomFormValues): CreateRoomFieldErrors {
     fieldErrors.url = 'Enter a complete URL starting with http:// or https://.';
   }
 
-  if (values.note.length > 280) {
-    fieldErrors.note = 'Keep the optional note under 280 characters.';
+  if (values.note.length > NOTE_CHARACTER_LIMIT) {
+    fieldErrors.note = `Keep the optional note under ${NOTE_CHARACTER_LIMIT} characters.`;
   }
 
   return fieldErrors;
@@ -106,7 +103,10 @@ export function RoomCreate() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [result, setResult] = useState<CreateRoomResponse | null>(null);
 
-  const noteCharactersRemaining = useMemo(() => 280 - values.note.length, [values.note]);
+  const noteCharactersRemaining = useMemo(
+    () => NOTE_CHARACTER_LIMIT - values.note.length,
+    [values.note],
+  );
 
   function updateValue<K extends keyof CreateRoomFormValues>(key: K, value: CreateRoomFormValues[K]) {
     setValues((currentValues) => ({
@@ -197,6 +197,8 @@ export function RoomCreate() {
     );
   }
 
+  const isSubmitting = status === 'submitting';
+
   return (
     <section className="create-layout">
       <article className="create-card">
@@ -211,8 +213,10 @@ export function RoomCreate() {
           <label className="field">
             <span>Room name</span>
             <input
+              aria-invalid={fieldErrors.name ? 'true' : 'false'}
               autoComplete="off"
               className={fieldErrors.name ? 'field-input field-input-error' : 'field-input'}
+              disabled={isSubmitting}
               name="name"
               onChange={(event) => updateValue('name', event.target.value)}
               placeholder="Homepage concept review"
@@ -225,8 +229,10 @@ export function RoomCreate() {
           <label className="field">
             <span>Work link</span>
             <input
+              aria-invalid={fieldErrors.url ? 'true' : 'false'}
               autoComplete="url"
               className={fieldErrors.url ? 'field-input field-input-error' : 'field-input'}
+              disabled={isSubmitting}
               name="url"
               onChange={(event) => updateValue('url', event.target.value)}
               placeholder="https://example.com/prototype"
@@ -239,7 +245,9 @@ export function RoomCreate() {
           <label className="field">
             <span>Optional note</span>
             <textarea
+              aria-invalid={fieldErrors.note ? 'true' : 'false'}
               className={fieldErrors.note ? 'field-textarea field-input-error' : 'field-textarea'}
+              disabled={isSubmitting}
               name="note"
               onChange={(event) => updateValue('note', event.target.value)}
               placeholder="Please focus on clarity, hierarchy, and whether the handoff feels ready."
@@ -252,6 +260,12 @@ export function RoomCreate() {
             </div>
           </label>
 
+          {isSubmitting ? (
+            <div className="form-message form-message-info" role="status" aria-live="polite">
+              Creating your room and preparing the share link…
+            </div>
+          ) : null}
+
           {errorMessage ? (
             <div className="form-message form-message-error" role="alert">
               {errorMessage}
@@ -259,8 +273,8 @@ export function RoomCreate() {
           ) : null}
 
           <div className="hero-actions">
-            <button className="primary-button" type="submit" disabled={status === 'submitting'}>
-              {status === 'submitting' ? 'Creating room…' : 'Create review room'}
+            <button className="primary-button" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Creating room…' : 'Create review room'}
             </button>
             <Link className="secondary-link" href="/">
               Back to landing page
