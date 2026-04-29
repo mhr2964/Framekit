@@ -26,10 +26,11 @@
       <div class="sidebar-card">
         <div class="eyebrow">What this prototype shows</div>
         <ul class="mini-list">
-          <li>Clear landing explanation</li>
-          <li>Guided room setup with states</li>
-          <li>In-context comments on a web mock</li>
+          <li>Canonical flow v1: create → review → share</li>
+          <li>Contract-aligned room creation and room loading states</li>
+          <li>Room-scoped comments with open and resolved review states</li>
         </ul>
+        <p class="thread-note">Accepted routes: <strong>POST /api/v1/rooms</strong>, <strong>GET /api/v1/rooms/:roomId</strong>, plus room-scoped comment endpoints.</p>
       </div>
     </aside>
 
@@ -37,14 +38,24 @@
       <section class="screen active" id="screen-landing" data-screen="landing">
         <header class="hero">
           <div class="hero-copy">
-            <div class="eyebrow">Review web work in context</div>
-            <h1>Framekit turns any page into a shared review room.</h1>
+            <div class="eyebrow">Canonical flow v1</div>
+            <h1>Create a review room, load it by room ID, and share the same link with collaborators.</h1>
             <p class="lede">
-              Drop in a URL, invite collaborators, and leave comments directly on the interface instead of in scattered docs and screenshots.
+              This prototype is frozen to one accepted create→review→share path: start from a page URL, create a room through the versioned room route, open the room by its ID, then continue feedback through room-scoped comments.
             </p>
             <div class="hero-actions">
-              <button class="btn btn-primary" type="button" data-go-screen="create">Create a room</button>
-              <button class="btn btn-secondary" type="button" data-go-screen="review">See a review example</button>
+              <button class="btn btn-primary" type="button" data-go-screen="create">Start canonical flow</button>
+              <button class="btn btn-secondary" type="button" data-go-screen="review">View review state</button>
+            </div>
+
+            <div class="surface" style="margin-top: 18px; padding: 16px; border-radius: 18px;">
+              <div class="eyebrow">Visible state path</div>
+              <ul class="mini-list">
+                <li><strong>Entry:</strong> overview routes directly into room setup</li>
+                <li><strong>Create:</strong> draft, validation blocked, loading, failed, created</li>
+                <li><strong>Review:</strong> loading, loaded, empty room, room not found</li>
+                <li><strong>Share:</strong> copy confirmation and fallback explanation from the room URL</li>
+              </ul>
             </div>
           </div>
 
@@ -54,7 +65,7 @@
             </div>
             <div class="hero-preview">
               <div class="preview-browser">
-                <div class="preview-url">https://framekit.app/pricing</div>
+                <div class="preview-url">POST /api/v1/rooms → GET /api/v1/rooms/fk-pricing-q2</div>
                 <div class="preview-page">
                   <div class="preview-nav"></div>
                   <div class="preview-title"></div>
@@ -77,47 +88,47 @@
         <section class="feature-grid">
           <article class="surface feature-card">
             <div class="feature-icon">01</div>
-            <h2>Capture the page as collaborators see it</h2>
-            <p>Each room anchors discussion to a specific URL, viewport, and snapshot so feedback stays grounded in the actual interface.</p>
+            <h2>Entry point: create from a specific page URL</h2>
+            <p>The canonical starting point is a single page under review. A room name and page URL are the minimum required inputs before the room can be created.</p>
           </article>
 
           <article class="surface feature-card">
             <div class="feature-icon">02</div>
-            <h2>Comment directly on the interface</h2>
-            <p>Click anywhere on the page mock to inspect pins, read threads, move between comments, and resolve issues without losing context.</p>
+            <h2>Create state returns a room ID and shareable review link</h2>
+            <p>After creation succeeds, the prototype assumes the product surfaces a stable room identifier and a review URL that opens the same room state for collaborators.</p>
           </article>
 
           <article class="surface feature-card">
             <div class="feature-icon">03</div>
-            <h2>Move from request to decision faster</h2>
-            <p>Open and resolved states make it obvious what still needs design or engineering follow-up before a room is ready to close.</p>
+            <h2>Review state is room-scoped and persistent</h2>
+            <p>Open and resolved comments belong to a room, not a temporary draft. Reviewers load the room by ID and continue feedback through room-scoped comments.</p>
           </article>
         </section>
 
         <section class="surface journey-card">
           <div class="journey-header">
             <div>
-              <div class="eyebrow">Typical flow</div>
-              <h2>From page link to aligned review</h2>
+              <div class="eyebrow">Frozen scope</div>
+              <h2>Framekit canonical create→review→share v1</h2>
             </div>
-            <button class="btn btn-ghost" type="button" data-go-screen="create">Start with room setup</button>
+            <button class="btn btn-ghost" type="button" data-go-screen="create">Open room setup</button>
           </div>
 
           <div class="journey-steps">
             <div class="journey-step">
               <div class="step-number">1</div>
-              <h3>Name the room</h3>
-              <p>Choose the page to review, add a concise room title, and set the initial reviewers.</p>
+              <h3>Entry</h3>
+              <p>Creator lands on room setup with one goal: define the room title, target page URL, and optional brief for the review.</p>
             </div>
             <div class="journey-step">
               <div class="step-number">2</div>
-              <h3>Share the review link</h3>
-              <p>Invite product, design, and engineering into the same room with one focused brief.</p>
+              <h3>Create</h3>
+              <p>The form submits to <strong>POST /api/v1/rooms</strong>. Success implies a stored room plus a room ID that can be opened immediately.</p>
             </div>
             <div class="journey-step">
               <div class="step-number">3</div>
-              <h3>Resolve feedback in context</h3>
-              <p>Track what is still open, what changed, and what already has alignment.</p>
+              <h3>Review + Share</h3>
+              <p>The created room loads through <strong>GET /api/v1/rooms/:roomId</strong>. The same room URL is the handoff link collaborators use to view and add room-scoped comments.</p>
             </div>
           </div>
         </section>
@@ -126,9 +137,9 @@
       <section class="screen" id="screen-create" data-screen="create">
         <div class="screen-header">
           <div>
-            <div class="eyebrow">Room creation</div>
+            <div class="eyebrow">Canonical flow v1 · create state</div>
             <h1>Create a review room</h1>
-            <p>Set up a realistic review session for a live webpage in a few steps.</p>
+            <p>Use the minimum accepted inputs for room creation, then hand off the generated review URL as the share step.</p>
           </div>
           <div class="header-actions">
             <button class="btn btn-secondary" type="button" data-go-screen="landing">Back to overview</button>
@@ -141,58 +152,53 @@
             <div class="form-section">
               <label class="field">
                 <span>Room name</span>
-                <input id="room-name" name="roomName" type="text" placeholder="Spring pricing review" />
-                <small>Use a clear title collaborators can recognize later.</small>
+                <input id="room-name" name="roomName" type="text" placeholder="Spring pricing review" aria-describedby="room-name-error" />
+                <small>Required at creation time. Stored as part of the room returned by the rooms API.</small>
+                <small id="room-name-error" class="hidden">Enter a room name before creating this review room.</small>
               </label>
 
               <label class="field">
                 <span>Page URL</span>
-                <input id="room-url" name="roomUrl" type="url" placeholder="https://example.com/pricing" />
-                <small>Framekit reviews a specific live page or prototype URL.</small>
+                <input id="room-url" name="roomUrl" type="url" placeholder="https://example.com/pricing" aria-describedby="room-url-error" />
+                <small>Required at creation time. This is the page the room is anchored to for review.</small>
+                <small id="room-url-error" class="hidden">Enter a valid page URL before creating this review room.</small>
               </label>
 
               <label class="field">
-                <span>Review goal</span>
+                <span>Note or brief <em>(optional)</em></span>
                 <textarea id="room-goal" name="roomGoal" rows="4" placeholder="What should reviewers focus on?"></textarea>
-                <small>Example: Validate hierarchy and CTA clarity before handoff.</small>
+                <small>Optional review context that is shown back inside the created room.</small>
               </label>
             </div>
 
-            <div class="form-section split">
-              <label class="field">
-                <span>Reviewers</span>
-                <input id="room-reviewers" name="roomReviewers" type="text" placeholder="maya@framekit.app, alex@framekit.app" />
-                <small>Comma-separated emails are enough for this prototype.</small>
-              </label>
-
-              <label class="field">
-                <span>Viewport</span>
-                <select id="room-viewport" name="roomViewport">
-                  <option value="desktop">Desktop · 1440px</option>
-                  <option value="tablet">Tablet · 1024px</option>
-                  <option value="mobile">Mobile · 390px</option>
-                </select>
-                <small>Rooms anchor comments to a chosen viewing context.</small>
-              </label>
+            <div class="form-feedback" id="form-feedback" aria-live="polite">
+              Create state summary: submit title + URL to POST /api/v1/rooms, then transition to the returned room.
             </div>
 
-            <div class="form-section">
-              <span class="field-label">Review options</span>
-              <label class="check-row">
-                <input id="option-snapshot" type="checkbox" checked />
-                <span>Capture a snapshot for stable review pins</span>
-              </label>
-              <label class="check-row">
-                <input id="option-notify" type="checkbox" checked />
-                <span>Notify reviewers as soon as the room is created</span>
-              </label>
-              <label class="check-row">
-                <input id="option-resolve" type="checkbox" />
-                <span>Require all comments to be resolved before closeout</span>
-              </label>
+            <div class="surface hidden" id="validation-summary" style="padding: 14px 16px; border-radius: 16px; background: rgba(190, 24, 93, 0.08); margin-bottom: 16px;">
+              <div class="eyebrow">Validation blocked</div>
+              <p style="margin: 6px 0 0;">Fix the highlighted required fields before this room can be created.</p>
             </div>
 
-            <div class="form-feedback" id="form-feedback" aria-live="polite"></div>
+            <div class="surface hidden" id="create-loading-state" style="padding: 16px; border-radius: 16px; background: rgba(37, 99, 235, 0.08); margin-bottom: 16px;">
+              <div class="eyebrow">Create request in progress</div>
+              <p style="margin: 6px 0 0;">Creating room… Sending room name and page URL to <strong>POST /api/v1/rooms</strong>.</p>
+            </div>
+
+            <div class="surface hidden" id="create-error-state" style="padding: 16px; border-radius: 16px; background: rgba(220, 38, 38, 0.08); margin-bottom: 16px;">
+              <div class="eyebrow">Create failed</div>
+              <p style="margin: 6px 0 0;">The room could not be created right now. Keep the entered values visible, confirm the request payload, and retry.</p>
+            </div>
+
+            <div class="surface" style="padding: 16px; border-radius: 16px; background: rgba(15, 23, 42, 0.03); margin-bottom: 16px;">
+              <div class="eyebrow">Concise edge and error states</div>
+              <ul class="mini-list">
+                <li><strong>Missing required fields:</strong> stay on create screen and show inline guidance</li>
+                <li><strong>Invalid URL format:</strong> block creation until the URL is corrected</li>
+                <li><strong>Create request fails:</strong> keep entered values and prompt retry</li>
+                <li><strong>Room created:</strong> reveal room ID and review link as the next step</li>
+              </ul>
+            </div>
 
             <div class="form-actions">
               <button class="btn btn-secondary" type="button" id="prefill-button">Use sample data</button>
@@ -209,16 +215,8 @@
                 <dd id="summary-url">No URL yet</dd>
               </div>
               <div>
-                <dt>Goal</dt>
-                <dd id="summary-goal">Add a short review brief to align the room.</dd>
-              </div>
-              <div>
-                <dt>Reviewers</dt>
-                <dd id="summary-reviewers">No reviewers added</dd>
-              </div>
-              <div>
-                <dt>Viewport</dt>
-                <dd id="summary-viewport">Desktop · 1440px</dd>
+                <dt>Brief</dt>
+                <dd id="summary-goal">Optional note can help align what reviewers should focus on.</dd>
               </div>
             </dl>
 
@@ -226,53 +224,130 @@
               <div class="status-card">
                 <span class="status-dot neutral"></span>
                 <div>
-                  <strong>Draft</strong>
-                  <p>Complete the fields to generate a room link.</p>
+                  <strong>Create state</strong>
+                  <p>Waiting for required inputs before POST /api/v1/rooms can succeed.</p>
+                </div>
+              </div>
+              <div class="status-card hidden" id="create-pending-card">
+                <span class="status-dot neutral"></span>
+                <div>
+                  <strong>Creating room</strong>
+                  <p>The request is in flight and the next successful state routes into the returned room ID.</p>
                 </div>
               </div>
               <div class="status-card success hidden" id="created-state">
                 <span class="status-dot success"></span>
                 <div>
                   <strong>Room created</strong>
-                  <p id="created-message">Your review room will appear here once created.</p>
+                  <p id="created-message">POST /api/v1/rooms returned a room that is ready to open and share.</p>
                 </div>
               </div>
             </div>
 
             <div class="link-preview hidden" id="room-link-card">
-              <div class="eyebrow">Room link</div>
+              <div class="eyebrow">Share handoff</div>
+              <div class="summary-list" style="margin-bottom: 12px;">
+                <div>
+                  <dt>Room ID</dt>
+                  <dd id="created-room-id">fk-demo-room</dd>
+                </div>
+                <div>
+                  <dt>Review URL</dt>
+                  <dd><code id="room-link">framekit.app/review/fk-demo-room</code></dd>
+                </div>
+              </div>
+              <p class="thread-note" id="post-create-transition-note">Successful creation transitions directly into the returned room by <strong>roomId</strong>. This same URL is the collaborator share handoff.</p>
               <div class="link-row">
-                <code id="room-link">framekit.app/review/fk-demo-room</code>
-                <button class="btn btn-ghost small" type="button" data-go-screen="review">Open</button>
+                <button class="btn btn-primary small" type="button" data-go-screen="review">Open review room</button>
               </div>
             </div>
           </aside>
         </div>
+
+        <section class="surface journey-card" style="margin-top: 24px;">
+          <div class="journey-header">
+            <div>
+              <div class="eyebrow">Accepted assumptions</div>
+              <h2>Backend assumptions implied by the frozen create state</h2>
+            </div>
+          </div>
+          <div class="journey-steps">
+            <div class="journey-step">
+              <div class="step-number">A</div>
+              <h3>Room creation is versioned and synchronous for this slice</h3>
+              <p>The prototype assumes <strong>POST /api/v1/rooms</strong> returns enough data to show success, a room ID, and the next review URL without extra setup steps.</p>
+            </div>
+            <div class="journey-step">
+              <div class="step-number">B</div>
+              <h3>Room loading is room-ID based</h3>
+              <p>The next screen assumes <strong>GET /api/v1/rooms/:roomId</strong> loads the canonical review room and its current metadata.</p>
+            </div>
+            <div class="journey-step">
+              <div class="step-number">C</div>
+              <h3>Comments belong to the room</h3>
+              <p>The review state assumes feedback is stored and queried as room-scoped comments tied to the created room rather than to a transient local draft.</p>
+            </div>
+          </div>
+        </section>
       </section>
 
       <section class="screen" id="screen-review" data-screen="review">
         <div class="screen-header">
           <div>
-            <div class="eyebrow">In-context review</div>
-            <h1>Pricing page review room</h1>
-            <p>Explore open and resolved comments pinned directly to the page mock.</p>
+            <div class="eyebrow">Canonical flow v1 · review state</div>
+            <h1 id="review-room-name">Pricing page review room</h1>
+            <p id="review-room-description">This room is loaded by room ID, shows room-scoped comments, and doubles as the share destination collaborators use for the same review.</p>
+            <p class="thread-note" style="margin-top: 10px;">Back to room setup preserves the prototype's room context while clarifying or revising the setup assumptions shown for this room.</p>
           </div>
           <div class="header-actions">
-            <button class="btn btn-secondary" type="button" data-go-screen="create">Create another room</button>
+            <button class="btn btn-secondary" type="button" data-go-screen="create">Back to room setup</button>
+            <button class="btn btn-primary" type="button">Copy share link</button>
+          </div>
+        </div>
+
+        <div class="surface hidden" id="review-loading-state" style="margin-bottom: 24px; padding: 18px; border-radius: 20px;">
+          <div class="eyebrow">Loading room</div>
+          <h2 style="margin: 8px 0 10px;">Loading room by ID…</h2>
+          <p style="margin: 0 0 12px;">Fetching the canonical review room through <strong>GET /api/v1/rooms/:roomId</strong> before comments and page anchors appear.</p>
+          <div class="mini-list">
+            <div>• Room metadata placeholder</div>
+            <div>• Page preview placeholder</div>
+            <div>• Comment count placeholder</div>
+          </div>
+        </div>
+
+        <div class="surface hidden" id="review-not-found-state" style="margin-bottom: 24px; padding: 18px; border-radius: 20px; background: rgba(220, 38, 38, 0.08);">
+          <div class="eyebrow">Room not found</div>
+          <h2 style="margin: 8px 0 10px;">This review room could not be loaded.</h2>
+          <p style="margin: 0 0 12px;">Confirm the room ID or return to create to generate a new room and share link.</p>
+          <div class="header-actions">
+            <button class="btn btn-secondary" type="button" data-go-screen="landing">Back to overview</button>
+            <button class="btn btn-primary" type="button" data-go-screen="create">Create a new room</button>
           </div>
         </div>
 
         <div class="review-toolbar surface">
           <div class="toolbar-meta">
-            <div class="meta-chip">Room ID · fk-pricing-q2</div>
+            <div class="meta-chip" id="review-room-id">Room ID · fk-pricing-q2</div>
             <div class="meta-chip">Viewport · Desktop</div>
-            <div class="meta-chip">5 comments</div>
+            <div class="meta-chip" id="review-comment-count">5 comments</div>
+            <div class="meta-chip" id="review-share-link">Share URL · framekit.app/review/fk-pricing-q2</div>
           </div>
           <div class="toolbar-actions">
             <button class="filter-chip active" type="button" data-filter="all">All</button>
             <button class="filter-chip" type="button" data-filter="open">Open</button>
             <button class="filter-chip" type="button" data-filter="resolved">Resolved</button>
           </div>
+        </div>
+
+        <div class="surface hidden" id="share-confirmation" style="margin-top: 16px; margin-bottom: 16px; padding: 14px 16px; border-radius: 16px; background: rgba(22, 163, 74, 0.08);">
+          <div class="eyebrow">Share confirmed</div>
+          <p style="margin: 6px 0 0;">Share link copied. Collaborators use the same room URL to enter this review context.</p>
+        </div>
+
+        <div class="surface hidden" id="share-fallback-state" style="margin-top: 16px; margin-bottom: 16px; padding: 14px 16px; border-radius: 16px; background: rgba(245, 158, 11, 0.12);">
+          <div class="eyebrow">Share fallback</div>
+          <p style="margin: 6px 0 0;">If copy confirmation is unavailable, the room still remains share-ready through the visible review URL in the toolbar. Retry the copy action or share the room ID manually.</p>
         </div>
 
         <div class="review-layout">
@@ -315,6 +390,11 @@
               <button class="comment-pin resolved" type="button" style="top: 58%; left: 28%;" data-comment-id="3">3</button>
               <button class="comment-pin open" type="button" style="top: 61%; left: 60%;" data-comment-id="4">4</button>
               <button class="comment-pin resolved" type="button" style="top: 77%; left: 76%;" data-comment-id="5">5</button>
+
+              <div class="surface hidden" id="review-empty-stage-hint" style="position: absolute; left: 24px; right: 24px; bottom: 24px; padding: 12px 14px; border-radius: 16px; background: rgba(255,255,255,0.92);">
+                <strong>Pins appear here after the first comment.</strong>
+                <p style="margin: 6px 0 0;">The room can load successfully even when no anchored feedback has been added yet.</p>
+              </div>
             </div>
           </section>
 
@@ -331,6 +411,12 @@
               <button class="btn btn-ghost small" type="button" id="prev-comment">Previous</button>
               <div class="comment-count" id="comment-count">Comment 1 of 5</div>
               <button class="btn btn-ghost small" type="button" id="next-comment">Next</button>
+            </div>
+
+            <div class="surface hidden" id="comments-empty-state" style="margin: 16px 0; padding: 16px; border-radius: 16px; background: rgba(15, 23, 42, 0.04);">
+              <div class="eyebrow">No comments yet</div>
+              <h3 style="margin: 8px 0 10px;">This room is ready for the first comment.</h3>
+              <p style="margin: 0;">Select a target area on the page to leave the first piece of room-scoped feedback. Until then, the room remains shareable by URL.</p>
             </div>
 
             <article class="thread-card">
@@ -362,12 +448,43 @@
             <div class="panel-footer">
               <div class="resolution-row">
                 <button class="btn btn-secondary small" type="button" id="toggle-status">Mark resolved</button>
-                <button class="btn btn-primary small" type="button" data-go-screen="create">Create new room</button>
+                <button class="btn btn-primary small" type="button" data-go-screen="create">Share or create another room</button>
               </div>
-              <div class="thread-note">Pins update with the selected comment. Resolved items remain visible for audit history.</div>
+              <div class="thread-note">Review states shown here: loaded room, open comment, resolved comment, no comments yet, room not found, share confirmation, and share fallback explanation. Back returns to room setup while the room URL remains the v1 share primitive.</div>
             </div>
           </aside>
         </div>
+
+        <section class="surface journey-card" style="margin-top: 24px;">
+          <div class="journey-header">
+            <div>
+              <div class="eyebrow">State inventory</div>
+              <h2>Canonical create→review→share v1 states</h2>
+            </div>
+          </div>
+          <div class="journey-steps">
+            <div class="journey-step">
+              <div class="step-number">1</div>
+              <h3>Entry point</h3>
+              <p>Overview screen positions this flow as the single accepted v1 path and routes the creator directly into room setup.</p>
+            </div>
+            <div class="journey-step">
+              <div class="step-number">2</div>
+              <h3>Create states</h3>
+              <p>Draft, validation blocked, create loading, creation failed, and room created. Room creation is explicitly tied to POST /api/v1/rooms.</p>
+            </div>
+            <div class="journey-step">
+              <div class="step-number">3</div>
+              <h3>Review states</h3>
+              <p>Loading room, loaded room, open comments, resolved comments, no comments yet, and room not found. Room loading is explicitly tied to GET /api/v1/rooms/:roomId.</p>
+            </div>
+            <div class="journey-step">
+              <div class="step-number">4</div>
+              <h3>Share handoff</h3>
+              <p>The room URL is the handoff artifact. Sharing means sending collaborators to the same room ID where room-scoped comments are visible and persistent, with copy confirmation and fallback explanation shown in-room.</p>
+            </div>
+          </div>
+        </section>
       </section>
     </main>
   </div>

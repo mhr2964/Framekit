@@ -1,7 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
+import {
+  CREATE_REVIEW_SHARE_LIMITS,
+  CREATE_REVIEW_SHARE_STATUS,
+  CREATE_REVIEW_SHARE_STRINGS,
+} from './lib/createReviewShareConstants';
 import {
   createRoom,
   type CreateRoomApiError,
@@ -12,19 +17,21 @@ import {
 
 interface CreateRoomFormValues {
   name: string;
-  url: string;
-  note: string;
+  frameUrl: string;
+  createdBy: string;
 }
 
-type CreateRoomStatus = 'idle' | 'submitting' | 'success' | 'error';
+type CreateRoomStatus =
+  (typeof CREATE_REVIEW_SHARE_STATUS.create)[keyof typeof CREATE_REVIEW_SHARE_STATUS.create];
 
 const INITIAL_VALUES: CreateRoomFormValues = {
   name: '',
-  url: '',
-  note: '',
+  frameUrl: '',
+  createdBy: '',
 };
 
-const NOTE_CHARACTER_LIMIT = 280;
+const ROOM_NAME_MAX_LENGTH = CREATE_REVIEW_SHARE_LIMITS.roomNameMaxLength;
+const CREATOR_NAME_MAX_LENGTH = CREATE_REVIEW_SHARE_LIMITS.creatorNameMaxLength;
 
 function isValidHttpUrl(value: string) {
   try {
@@ -37,35 +44,40 @@ function isValidHttpUrl(value: string) {
 
 function validateValues(values: CreateRoomFormValues): CreateRoomFieldErrors {
   const fieldErrors: CreateRoomFieldErrors = {};
+  const trimmedName = values.name.trim();
+  const trimmedFrameUrl = values.frameUrl.trim();
+  const trimmedCreatedBy = values.createdBy.trim();
 
-  if (!values.name.trim()) {
+  if (!trimmedName) {
     fieldErrors.name = 'Add a room name so reviewers know what they are opening.';
+  } else if (trimmedName.length > ROOM_NAME_MAX_LENGTH) {
+    fieldErrors.name = 'Add a room name using 1 to 120 characters.';
   }
 
-  if (!values.url.trim()) {
-    fieldErrors.url = 'Paste the link you want people to review.';
-  } else if (!isValidHttpUrl(values.url.trim())) {
-    fieldErrors.url = 'Enter a complete URL starting with http:// or https://.';
+  if (!trimmedFrameUrl) {
+    fieldErrors.frameUrl = 'Paste the link you want people to review.';
+  } else if (!isValidHttpUrl(trimmedFrameUrl)) {
+    fieldErrors.frameUrl = 'Enter a valid link starting with http:// or https://.';
   }
 
-  if (values.note.length > NOTE_CHARACTER_LIMIT) {
-    fieldErrors.note = `Keep the optional note under ${NOTE_CHARACTER_LIMIT} characters.`;
+  if (trimmedCreatedBy.length > CREATOR_NAME_MAX_LENGTH) {
+    fieldErrors.createdBy = 'Creator name must be 1 to 80 characters.';
   }
 
   return fieldErrors;
 }
 
 function hasFieldErrors(fieldErrors: CreateRoomFieldErrors) {
-  return Boolean(fieldErrors.name || fieldErrors.url || fieldErrors.note);
+  return Boolean(fieldErrors.name || fieldErrors.frameUrl || fieldErrors.createdBy);
 }
 
 function toRequest(values: CreateRoomFormValues): CreateRoomRequest {
-  const trimmedNote = values.note.trim();
+  const trimmedCreatedBy = values.createdBy.trim();
 
   return {
     name: values.name.trim(),
-    url: values.url.trim(),
-    note: trimmedNote ? trimmedNote : undefined,
+    frameUrl: values.frameUrl.trim(),
+    createdBy: trimmedCreatedBy ? { name: trimmedCreatedBy } : undefined,
   };
 }
 
@@ -79,7 +91,7 @@ function getErrorMessage(error: unknown) {
     return error.message;
   }
 
-  return 'We could not create the room right now. Please try again.';
+  return CREATE_REVIEW_SHARE_STRINGS.create.submitErrorFallback;
 }
 
 function getFieldErrors(error: unknown): CreateRoomFieldErrors {
@@ -99,14 +111,9 @@ function getFieldErrors(error: unknown): CreateRoomFieldErrors {
 export function RoomCreate() {
   const [values, setValues] = useState<CreateRoomFormValues>(INITIAL_VALUES);
   const [fieldErrors, setFieldErrors] = useState<CreateRoomFieldErrors>({});
-  const [status, setStatus] = useState<CreateRoomStatus>('idle');
+  const [status, setStatus] = useState<CreateRoomStatus>(CREATE_REVIEW_SHARE_STATUS.create.idle);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [result, setResult] = useState<CreateRoomResponse | null>(null);
-
-  const noteCharactersRemaining = useMemo(
-    () => NOTE_CHARACTER_LIMIT - values.note.length,
-    [values.note],
-  );
 
   function updateValue<K extends keyof CreateRoomFormValues>(key: K, value: CreateRoomFormValues[K]) {
     setValues((currentValues) => ({
@@ -119,8 +126,11 @@ export function RoomCreate() {
       [key]: undefined,
     }));
 
-    if (status === 'error') {
-      setStatus('idle');
+    if (
+      status === CREATE_REVIEW_SHARE_STATUS.create.error ||
+      status === CREATE_REVIEW_SHARE_STATUS.create.invalid
+    ) {
+      setStatus(CREATE_REVIEW_SHARE_STATUS.create.idle);
       setErrorMessage(null);
     }
   }
@@ -132,21 +142,21 @@ export function RoomCreate() {
 
     if (hasFieldErrors(nextFieldErrors)) {
       setFieldErrors(nextFieldErrors);
-      setStatus('error');
-      setErrorMessage('Please fix the highlighted fields and try again.');
+      setStatus(CREATE_REVIEW_SHARE_STATUS.create.invalid);
+      setErrorMessage(CREATE_REVIEW_SHARE_STRINGS.create.validationSummary);
       return;
     }
 
-    setStatus('submitting');
+    setStatus(CREATE_REVIEW_SHARE_STATUS.create.submitting);
     setErrorMessage(null);
     setFieldErrors({});
 
     try {
       const createdRoom = await createRoom(toRequest(values));
       setResult(createdRoom);
-      setStatus('success');
+      setStatus(CREATE_REVIEW_SHARE_STATUS.create.success);
     } catch (error) {
-      setStatus('error');
+      setStatus(CREATE_REVIEW_SHARE_STATUS.create.error);
       setErrorMessage(getErrorMessage(error));
       setFieldErrors(getFieldErrors(error));
     }
@@ -155,38 +165,40 @@ export function RoomCreate() {
   function handleReset() {
     setValues(INITIAL_VALUES);
     setFieldErrors({});
-    setStatus('idle');
+    setStatus(CREATE_REVIEW_SHARE_STATUS.create.idle);
     setErrorMessage(null);
     setResult(null);
   }
 
-  if (status === 'success' && result) {
+  if (status === CREATE_REVIEW_SHARE_STATUS.create.success && result) {
+    const reviewPath = `/review/${result.room.id}`;
+
     return (
       <section className="create-card create-success-card" aria-labelledby="create-success-title">
         <span className="eyebrow">Room ready</span>
         <h1 id="create-success-title">Your review room is ready to share.</h1>
         <p className="section-copy">
-          Send the review path to your client or open the room now to confirm everything looks
+          Send the review link to your client or open the room now to confirm everything looks
           right.
         </p>
 
         <dl className="result-list">
           <div>
             <dt>Room ID</dt>
-            <dd>{result.roomId}</dd>
+            <dd>{result.room.id}</dd>
           </div>
           <div>
-            <dt>Review path</dt>
-            <dd>{result.reviewPath}</dd>
+            <dt>Room name</dt>
+            <dd>{result.room.name}</dd>
           </div>
           <div>
-            <dt>Share URL</dt>
-            <dd className="share-url">{result.shareUrl}</dd>
+            <dt>Review link</dt>
+            <dd className="share-url">{reviewPath}</dd>
           </div>
         </dl>
 
         <div className="hero-actions">
-          <Link className="primary-link-button" href={result.reviewPath}>
+          <Link className="primary-link-button" href={reviewPath}>
             Open review room
           </Link>
           <button className="secondary-button" type="button" onClick={handleReset}>
@@ -197,29 +209,31 @@ export function RoomCreate() {
     );
   }
 
-  const isSubmitting = status === 'submitting';
+  const isSubmitting = status === CREATE_REVIEW_SHARE_STATUS.create.submitting;
+  const isInvalid = status === CREATE_REVIEW_SHARE_STATUS.create.invalid;
+  const isFailure = status === CREATE_REVIEW_SHARE_STATUS.create.error;
+  const nextFieldErrors = validateValues(values);
+  const showInvalidHint = !isSubmitting && hasFieldErrors(nextFieldErrors);
 
   return (
     <section className="create-layout">
       <article className="create-card">
-        <span className="eyebrow">Create a room</span>
-        <h1>Start a focused client review.</h1>
-        <p className="section-copy">
-          Add the link you want reviewed, give the room a clear name, and include any short setup
-          note that will help your client orient quickly.
-        </p>
+        <span className="eyebrow">{CREATE_REVIEW_SHARE_STRINGS.create.eyebrow}</span>
+        <h1>{CREATE_REVIEW_SHARE_STRINGS.create.title}</h1>
+        <p className="section-copy">{CREATE_REVIEW_SHARE_STRINGS.create.intro}</p>
 
         <form className="create-form" onSubmit={handleSubmit} noValidate>
           <label className="field">
-            <span>Room name</span>
+            <span>{CREATE_REVIEW_SHARE_STRINGS.create.roomNameLabel}</span>
             <input
               aria-invalid={fieldErrors.name ? 'true' : 'false'}
               autoComplete="off"
               className={fieldErrors.name ? 'field-input field-input-error' : 'field-input'}
               disabled={isSubmitting}
+              maxLength={ROOM_NAME_MAX_LENGTH}
               name="name"
               onChange={(event) => updateValue('name', event.target.value)}
-              placeholder="Homepage concept review"
+              placeholder={CREATE_REVIEW_SHARE_STRINGS.create.roomNamePlaceholder}
               type="text"
               value={values.name}
             />
@@ -227,76 +241,91 @@ export function RoomCreate() {
           </label>
 
           <label className="field">
-            <span>Work link</span>
+            <span>{CREATE_REVIEW_SHARE_STRINGS.create.workLinkLabel}</span>
             <input
-              aria-invalid={fieldErrors.url ? 'true' : 'false'}
+              aria-invalid={fieldErrors.frameUrl ? 'true' : 'false'}
               autoComplete="url"
-              className={fieldErrors.url ? 'field-input field-input-error' : 'field-input'}
+              className={fieldErrors.frameUrl ? 'field-input field-input-error' : 'field-input'}
               disabled={isSubmitting}
-              name="url"
-              onChange={(event) => updateValue('url', event.target.value)}
-              placeholder="https://example.com/prototype"
+              name="frameUrl"
+              onChange={(event) => updateValue('frameUrl', event.target.value)}
+              placeholder={CREATE_REVIEW_SHARE_STRINGS.create.workLinkPlaceholder}
               type="url"
-              value={values.url}
+              value={values.frameUrl}
             />
-            {fieldErrors.url ? <small className="field-error">{fieldErrors.url}</small> : null}
+            {fieldErrors.frameUrl ? (
+              <small className="field-error">{fieldErrors.frameUrl}</small>
+            ) : null}
           </label>
 
           <label className="field">
-            <span>Optional note</span>
-            <textarea
-              aria-invalid={fieldErrors.note ? 'true' : 'false'}
-              className={fieldErrors.note ? 'field-textarea field-input-error' : 'field-textarea'}
+            <span>{CREATE_REVIEW_SHARE_STRINGS.create.creatorNameLabel}</span>
+            <input
+              aria-invalid={fieldErrors.createdBy ? 'true' : 'false'}
+              autoComplete="name"
+              className={fieldErrors.createdBy ? 'field-input field-input-error' : 'field-input'}
               disabled={isSubmitting}
-              name="note"
-              onChange={(event) => updateValue('note', event.target.value)}
-              placeholder="Please focus on clarity, hierarchy, and whether the handoff feels ready."
-              rows={5}
-              value={values.note}
+              maxLength={CREATOR_NAME_MAX_LENGTH}
+              name="createdBy"
+              onChange={(event) => updateValue('createdBy', event.target.value)}
+              placeholder={CREATE_REVIEW_SHARE_STRINGS.create.creatorNamePlaceholder}
+              type="text"
+              value={values.createdBy}
             />
-            <div className="field-meta">
-              {fieldErrors.note ? <small className="field-error">{fieldErrors.note}</small> : <span />}
-              <small>{noteCharactersRemaining} characters remaining</small>
-            </div>
+            {fieldErrors.createdBy ? (
+              <small className="field-error">{fieldErrors.createdBy}</small>
+            ) : (
+              <small className="field-hint">{CREATE_REVIEW_SHARE_STRINGS.create.creatorNameHint}</small>
+            )}
           </label>
 
           {isSubmitting ? (
             <div className="form-message form-message-info" role="status" aria-live="polite">
-              Creating your room and preparing the share link…
+              {CREATE_REVIEW_SHARE_STRINGS.create.submittingLabel}
             </div>
           ) : null}
 
-          {errorMessage ? (
+          {isInvalid && errorMessage ? (
             <div className="form-message form-message-error" role="alert">
-              {errorMessage}
+              <strong>{CREATE_REVIEW_SHARE_STRINGS.create.invalidTitle}</strong>
+              <div>{errorMessage}</div>
+            </div>
+          ) : null}
+
+          {isFailure && errorMessage ? (
+            <div className="form-message form-message-error" role="alert">
+              <strong>{CREATE_REVIEW_SHARE_STRINGS.create.failureTitle}</strong>
+              <div>{errorMessage}</div>
             </div>
           ) : null}
 
           <div className="hero-actions">
             <button className="primary-button" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Creating room…' : 'Create review room'}
+              {isSubmitting
+                ? CREATE_REVIEW_SHARE_STRINGS.create.submitButtonBusy
+                : isFailure
+                  ? CREATE_REVIEW_SHARE_STRINGS.create.retryLabel
+                  : CREATE_REVIEW_SHARE_STRINGS.create.submitButtonIdle}
             </button>
             <Link className="secondary-link" href="/">
-              Back to landing page
+              {CREATE_REVIEW_SHARE_STRINGS.create.backToHomeLabel}
             </Link>
           </div>
+
+          {showInvalidHint ? (
+            <small className="field-hint">{CREATE_REVIEW_SHARE_STRINGS.create.invalidHint}</small>
+          ) : null}
         </form>
       </article>
 
       <aside className="create-side-panel" aria-label="Create room guidance">
         <div className="info-card">
-          <span className="section-label">What to expect</span>
-          <p>
-            Framekit will create a room with a shareable path and hand you back the link you can
-            send to reviewers immediately.
-          </p>
+          <span className="section-label">{CREATE_REVIEW_SHARE_STRINGS.create.guidanceTitle}</span>
+          <p>{CREATE_REVIEW_SHARE_STRINGS.create.guidanceBody}</p>
         </div>
         <div className="info-card">
-          <span className="section-label">Sprint-one assumptions</span>
-          <p>
-            This flow uses a provisional create-room contract. The request sends a room name, a
-            source URL, and an optional note.
-          </p>
+          <span className="section-label">{CREATE_REVIEW_SHARE_STRINGS.create.setupTitle}</span>
+          <p>{CREATE_REVIEW_SHARE_STRINGS.create.setupBody}</p>
         </div>
       </aside>
     </section>
