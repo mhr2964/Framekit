@@ -1,40 +1,23 @@
 import {
-  getMockSharePath,
-  mockCreateComment,
-  mockCreateRoom,
-  mockGetRoom,
-  mockListComments,
-  type FlowCreateCommentRequest,
-  type FlowCreateCommentResponse,
-  type FlowCreateRoomRequest,
-  type FlowCreateRoomResponse,
-  type FlowGetRoomResponse,
-  type FlowListCommentsResponse,
+  type CreateCommentRequest as FlowCreateCommentRequest,
+  type CreateCommentResponse as FlowCreateCommentResponse,
+  type GetRoomResponse as FlowGetRoomResponse,
+  type ListCommentsResponse as FlowListCommentsResponse,
+} from './comments';
+import { CREATE_REVIEW_SHARE_DATA_MODE } from './createReviewShareConstants';
+import {
+  createComment as mockCreateComment,
+  getRoom as mockGetRoom,
+  listComments as mockListComments,
 } from './mockCreateReviewShare';
-
-export type CreateReviewShareDataMode = 'mock';
-
-const CREATE_REVIEW_SHARE_DATA_MODE: CreateReviewShareDataMode = 'mock';
-
-export type { FlowCreateCommentRequest, FlowCreateRoomRequest };
-
-export async function createRoomForFlow(
-  input: FlowCreateRoomRequest,
-): Promise<FlowCreateRoomResponse> {
-  if (CREATE_REVIEW_SHARE_DATA_MODE === 'mock') {
-    return mockCreateRoom(input);
-  }
-
-  // TODO: stitch to backend POST /api/v1/rooms here.
-  throw new Error('Create room flow is not configured.');
-}
 
 export async function getRoomForFlow(roomId: string): Promise<FlowGetRoomResponse> {
   if (CREATE_REVIEW_SHARE_DATA_MODE === 'mock') {
     return mockGetRoom(roomId);
   }
 
-  // TODO: stitch to backend GET /api/v1/rooms/:roomId here.
+  // TODO: stitch to canonical backend GET /api/v1/share-links/:shareId here,
+  // while preserving the current mocked-first `{ room }` return shape.
   throw new Error('Get room flow is not configured.');
 }
 
@@ -46,8 +29,8 @@ export async function listCommentsForFlow(
     return mockListComments(roomId, signal);
   }
 
-  // TODO: stitch to backend GET room-scoped comments here.
-  // Suggested target: GET /api/v1/comments?roomId=:roomId
+  // TODO: stitch to canonical backend GET /api/v1/share-links/:shareId here,
+  // projecting that payload back to the current `{ comments }` shape.
   throw new Error('List comments flow is not configured.');
 }
 
@@ -58,11 +41,8 @@ export async function createCommentForFlow(
     return mockCreateComment(input);
   }
 
-  // TODO: stitch to backend POST room-scoped comments here.
-  // Suggested target: POST /api/v1/comments
+  // TODO: stitch to canonical backend
+  // POST /api/v1/share-links/:shareId/comments here, preserving the current
+  // `{ comment }` response shape expected by the mocked-first UI.
   throw new Error('Create comment flow is not configured.');
-}
-
-export function getSharePathForFlow(roomId: string) {
-  return getMockSharePath(roomId);
 }
