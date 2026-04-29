@@ -1,20 +1,31 @@
-# Backend Contract Stubs
+# Backend
 
-This directory contains the backend source-of-truth docs and code skeletons for Framekit API v1.
+This workspace owns the versioned backend contract and server-side implementation for the current Framekit create → review → share slice.
 
-## Files
+## Approved current-slice routes
 
-- `docs/api-v1.md` — public contract for explicit `/api/v1/room` and `/api/v1/comment` endpoints
-- `docs/schema.md` — minimal storage notes aligned to the v1 contract
-- `src/contracts.ts` — shared request/response and domain types
-- `src/endpoints/room.ts` — stub handlers and route constants for `POST /api/v1/room` and `GET /api/v1/room/{roomId}`
-- `src/endpoints/comment.ts` — stub handlers and route constants for `GET /api/v1/comment?roomId=...` and `POST /api/v1/comment`
+The backend is currently pinned to these four routes only:
 
-## Contract-to-Stub Mapping
+- `POST /api/v1/rooms`
+- `GET /api/v1/rooms/:roomId`
+- `GET /api/v1/share-links/:shareId`
+- `POST /api/v1/share-links/:shareId/comments`
 
-- `POST /api/v1/room` -> `createRoom`
-- `GET /api/v1/room/{roomId}` -> `getRoomById`
-- `GET /api/v1/comment?roomId=...` -> `listComments`
-- `POST /api/v1/comment` -> `createComment`
+These are the only routes that frontend should wire against as committed backend surface for the current slice.
 
-These stubs are transport-agnostic and define endpoint shapes, validation entry points, explicit versioned paths, and response envelopes without choosing an HTTP framework.
+## Route intent
+
+- `POST /api/v1/rooms` creates a review room from a frame URL and returns the room record.
+- `GET /api/v1/rooms/:roomId` returns the room record for review loading.
+- `GET /api/v1/share-links/:shareId` returns the canonical share-link payload that points at the shared room.
+- `POST /api/v1/share-links/:shareId/comments` creates a comment through the share link and applies it to the linked room.
+
+## Persistence caveat
+
+The current implementation uses an in-memory repository. All created rooms, share links, and comments are ephemeral and will be lost on process restart.
+
+## Notes
+
+- Keep backend work under `/api/v1`.
+- Do not assume unlisted endpoints are stable.
+- See `docs/api-v1.md` and `docs/schema.md` for the current contract and schema notes.

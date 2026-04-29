@@ -1,13 +1,21 @@
 # Backend Handoff
 
-Backend implementation is owned by the backend team.
+## Current slice status
+This backend workspace is pinned to the approved current create → review → share slice only. Frontend and review should treat the following routes as the only committed API surface in this increment:
 
-## Cross-team expectations
+- `POST /api/v1/rooms`
+- `GET /api/v1/rooms/:roomId`
+- `GET /api/v1/share-links/:shareId`
+- `POST /api/v1/share-links/:shareId/comments`
 
-- Treat `workspace/docs/contracts/` as the canonical location for shared API contract documentation
-- Promote stable shared interfaces into `workspace/shared/` only when they are intentionally cross-team
-- Keep backend-specific implementation and setup details in `workspace/backend/README.md` and `workspace/backend/docs/`
+## Behavior notes
+- Creating a room returns the room payload and seeds a canonical share link in the in-memory backend store.
+- Fetching a room reads the created review room by `roomId`.
+- Fetching a share link reads the canonical share object by `shareId`.
+- Posting to the share-link comments route creates a comment against the linked room and increments that room's `commentCount`.
 
-## Current note
+## Persistence caveat
+Persistence is currently in-memory only. Data resets whenever the backend process restarts, so room ids, share ids, and comments are not durable across restarts.
 
-Platform created this handoff note for workspace clarity only. Product implementation ownership remains with backend.
+## Out of scope for this slice
+Any routes or persistence guarantees beyond the four routes above should be treated as uncommitted until a later backend increment lands.
