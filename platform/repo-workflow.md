@@ -1,15 +1,16 @@
 # Repository Workflow Guidance
 
-## Default Branch
-- The default working branch is `main`.
-- Managers should plan, review, and merge incremental company-approved work onto `main` unless a blocking exception is explicitly directed.
+## Branches
+- Default target branch: `main`.
+- Managers should do active work on a department-scoped branch named `feat/<dept>/<short-slice-task>`.
+- Example: `feat/frontend/review-room-shell`.
 
 ## Push Requests
 - Only managers should issue a `### Push Request`.
-- Use `### Push Request` only after the requested artifact files are written and verified, when there is a coherent increment ready to publish.
-- Do not use `### Push Request` for partial intent, speculative setup, or before file-write confirmation lands.
+- A manager should emit `### Push Request` against `main` as soon as a coherent, reviewable increment is ready.
+- Do not wait for a larger release batch or extra workflow stage.
 
-## Remote Setup
-- Treat Git remote setup as secondary to active delivery.
-- Only handle remote setup if it is actively blocking current work on the verified increment being pushed.
-- Do not open or maintain a separate remote-setup track when delivery can continue without it.
+## Current Phase Scope
+- Use only the minimal feature-branch workflow above for this create→review→share phase.
+- Do not introduce `develop`, release branches, or other extra branch workflow for this phase.
+- Remote setup should only be handled if it is blocking active work on the current increment.

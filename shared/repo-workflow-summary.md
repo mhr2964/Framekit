@@ -1,5 +1,7 @@
 # Repo Workflow Summary
 
-- Default branch: `main`.
-- `### Push Request` is manager-only and should be used only once a verified, coherent increment is ready to push.
-- Remote setup should be addressed only when it blocks active work; otherwise continue delivery first.
+- Default target branch: `main`.
+- Working branch pattern: `feat/<dept>/<short-slice-task>`.
+- `### Push Request` is manager-only and should be opened against `main` as soon as a coherent reviewable increment is ready.
+- No `develop`, release, or extra branch workflow for this phase.
+- Remote setup matters only if it blocks active work on the current increment.
