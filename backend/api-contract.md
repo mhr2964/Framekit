@@ -1,6 +1,6 @@
 # Framekit Backend API Contract v1
 
-**Status:** LOCKED  
+**Status:** FINAL v1 baseline  
 **Last Updated:** 2025-01-01  
 **Owner:** platform-engineer  
 **Consumers:** frontend, prototype
