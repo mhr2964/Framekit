@@ -1,4 +1,7 @@
-const COMMENTS_ENDPOINT = '/api/v1/comment';
+// TODO: Canonical comment endpoints and request/response shapes are not yet
+// visible in the published contract. This file is a scaffold stub.
+// See: workspace/docs/contracts/ for the contract publication target.
+// Blocked on: canonical binding spec in workspace/docs/contracts/create-review-share-binding-spec.md
 
 export interface ReviewComment {
   id: string;
@@ -132,61 +135,17 @@ export async function listComments(
   shareId: string,
   signal?: AbortSignal,
 ): Promise<ListCommentsResponse> {
-  const roomId = shareId.trim();
-
-  const response = await fetch(`${COMMENTS_ENDPOINT}?roomId=${encodeURIComponent(roomId)}`, {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-    },
-    cache: 'no-store',
-    signal,
-  });
-
-  if (!response.ok) {
-    let errorPayload: unknown = null;
-
-    try {
-      errorPayload = await response.json();
-    } catch {
-      errorPayload = null;
-    }
-
-    throw normalizeCommentError(errorPayload, 'We could not load comments right now.');
-  }
-
-  const data: unknown = await response.json();
-  return normalizeListCommentsResponse(data);
+  // TODO: Replace with canonical list-comments endpoint path once the binding
+  // spec defines the list endpoint (method, path, query params, auth).
+  throw new Error(
+    'listComments: endpoint not yet wired. Awaiting canonical contract in workspace/docs/contracts/create-review-share-binding-spec.md',
+  );
 }
 
 export async function createComment(input: CreateCommentRequest): Promise<CreateCommentResponse> {
-  const roomId = input.shareId.trim();
-
-  const response = await fetch(COMMENTS_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      roomId,
-      body: input.body,
-      author: input.author,
-    }),
-  });
-
-  if (!response.ok) {
-    let errorPayload: unknown = null;
-
-    try {
-      errorPayload = await response.json();
-    } catch {
-      errorPayload = null;
-    }
-
-    throw normalizeCommentError(errorPayload, 'We could not send that comment right now.');
-  }
-
-  const data: unknown = await response.json();
-  return normalizeCreateCommentResponse(data);
+  // TODO: Replace with canonical create-comment endpoint path once the binding
+  // spec defines the create endpoint (method, path, request body shape, auth).
+  throw new Error(
+    'createComment: endpoint not yet wired. Awaiting canonical contract in workspace/docs/contracts/create-review-share-binding-spec.md',
+  );
 }

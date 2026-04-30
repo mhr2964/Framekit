@@ -1,4 +1,7 @@
-const GET_ROOM_ENDPOINT_BASE = '/api/v1/room';
+// TODO: Canonical get-room endpoint and response shape are not yet visible in
+// the published contract. This file is a scaffold stub.
+// See: workspace/docs/contracts/ for the contract publication target.
+// Blocked on: canonical binding spec in workspace/docs/contracts/create-review-share-binding-spec.md
 
 export interface ReviewRoom {
   id: string;
@@ -82,31 +85,10 @@ function normalizeGetRoomError(data: unknown, fallbackMessage: string): GetRoomA
 }
 
 export async function getRoom(roomId: string): Promise<GetRoomResponse> {
-  const normalizedRoomId = roomId.trim();
-
-  // Adapter note: review-route params currently flow through the existing
-  // create/review adapter seam as `roomId`. Share-link lookup remains reserved
-  // until the locked share contract is available.
-  const response = await fetch(`${GET_ROOM_ENDPOINT_BASE}/${encodeURIComponent(normalizedRoomId)}`, {
-    method: 'GET',
-    headers: {
-      Accept: 'application/json',
-    },
-    cache: 'no-store',
-  });
-
-  if (!response.ok) {
-    let errorPayload: unknown = null;
-
-    try {
-      errorPayload = await response.json();
-    } catch {
-      errorPayload = null;
-    }
-
-    throw normalizeGetRoomError(errorPayload, 'We could not load this room right now.');
-  }
-
-  const data: unknown = await response.json();
-  return normalizeGetRoomResponse(data);
+  // TODO: Replace with canonical get-room endpoint path once the binding spec
+  // defines the endpoint (method, path, route params, auth).
+  // Current placeholder: GET /api/v1/room/{roomId}
+  throw new Error(
+    'getRoom: endpoint not yet wired. Awaiting canonical contract in workspace/docs/contracts/create-review-share-binding-spec.md',
+  );
 }

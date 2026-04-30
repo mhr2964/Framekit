@@ -1,4 +1,7 @@
-const CREATE_ROOM_ENDPOINT = '/api/v1/room';
+// TODO: Canonical create-room endpoint and request/response shapes are not yet
+// visible in the published contract. This file is a scaffold stub.
+// See: workspace/docs/contracts/ for the contract publication target.
+// Blocked on: canonical binding spec in workspace/docs/contracts/create-review-share-binding-spec.md
 
 export interface CreateRoomRequest {
   name: string;
@@ -103,36 +106,11 @@ function normalizeCreateRoomError(data: unknown, fallbackMessage: string): Creat
   return { message: fallbackMessage };
 }
 
-function createCreateRoomRequestBody(payload: CreateRoomRequest) {
-  return {
-    name: payload.name,
-    frameUrl: payload.frameUrl,
-    createdBy: payload.createdBy,
-  };
-}
-
 export async function createRoom(payload: CreateRoomRequest): Promise<CreateRoomResponse> {
-  const response = await fetch(CREATE_ROOM_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(createCreateRoomRequestBody(payload)),
-  });
-
-  if (!response.ok) {
-    let errorPayload: unknown = null;
-
-    try {
-      errorPayload = await response.json();
-    } catch {
-      errorPayload = null;
-    }
-
-    throw normalizeCreateRoomError(errorPayload, 'We could not create the room right now.');
-  }
-
-  const data: unknown = await response.json();
-  return normalizeCreateRoomResponse(data);
+  // TODO: Replace with canonical create-room endpoint path once the binding
+  // spec defines the endpoint (method, path, request body, auth).
+  // Current placeholder: POST /api/v1/room
+  throw new Error(
+    'createRoom: endpoint not yet wired. Awaiting canonical contract in workspace/docs/contracts/create-review-share-binding-spec.md',
+  );
 }
