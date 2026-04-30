@@ -1,9 +1,3 @@
-// SCAFFOLD STUB: Flow-layer transport is blocked pending canonical contract.
-// BLOCKED ON: Endpoint definitions in shared/contracts/CREATE_REVIEW_SHARE_CONTRACT.md
-// Adapter seam: preserves mock vs. live routing; live calls currently throw.
-// Once contract is visible, replace live endpoint calls in comments.ts, createRoom.ts,
-// and getRoom.ts; this file's routing logic requires no changes.
-
 import {
   createComment,
   type CreateCommentRequest as FlowCreateCommentRequest,
@@ -38,9 +32,7 @@ export async function createRoomForFlow(
     return mockCreateRoom(input);
   }
 
-  // TODO: Live createRoom wiring blocked on contract.
-  // BLOCKED: endpoint path, method, request body field names in
-  // shared/contracts/CREATE_REVIEW_SHARE_CONTRACT.md
+  // TODO: awaiting sync confirmation from backend HTTP handlers; locked route is POST /api/v1/room.
   return createRoom(input);
 }
 
@@ -49,9 +41,7 @@ export async function getRoomForFlow(roomId: string): Promise<FlowGetRoomRespons
     return mockGetRoom(roomId);
   }
 
-  // TODO: Live getRoom wiring blocked on contract.
-  // BLOCKED: endpoint path, method, param name (roomId vs shareId?), response shape in
-  // shared/contracts/CREATE_REVIEW_SHARE_CONTRACT.md
+  // TODO: awaiting sync confirmation from backend HTTP handlers; locked route is GET /api/v1/room/{roomId}.
   return getRoom(roomId);
 }
 
@@ -63,9 +53,7 @@ export async function listCommentsForFlow(
     return mockListComments(roomId, signal);
   }
 
-  // TODO: Live listComments wiring blocked on contract.
-  // BLOCKED: endpoint path, method, query/route params, response shape in
-  // shared/contracts/CREATE_REVIEW_SHARE_CONTRACT.md
+  // TODO: awaiting sync confirmation from backend HTTP handlers; locked route is GET /api/v1/comment?roomId={roomId}.
   return listComments(roomId, signal);
 }
 
@@ -76,9 +64,6 @@ export async function createCommentForFlow(
     return mockCreateComment(input);
   }
 
-  // TODO: Live createComment wiring blocked on contract.
-  // BLOCKED: endpoint path, method, request body field names, response shape in
-  // shared/contracts/CREATE_REVIEW_SHARE_CONTRACT.md
-  // Note: input.shareId must be clarified as roomId or share-link ID in contract.
+  // TODO: awaiting sync confirmation from backend HTTP handlers; locked route is POST /api/v1/comment.
   return createComment(input);
 }

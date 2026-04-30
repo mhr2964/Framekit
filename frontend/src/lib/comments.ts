@@ -1,11 +1,9 @@
-// SCAFFOLD STUB: Canonical comment transport contract is not yet visible.
-// BLOCKED ON: Endpoint definitions in shared/contracts/CREATE_REVIEW_SHARE_CONTRACT.md
-// Required contract elements:
-//   - listComments endpoint path, method, query/route params, auth
-//   - createComment endpoint path, method, request body shape, auth
-//   - response envelope shape (e.g., { comments } vs { data } vs bare array)
-//   - error response shape and code mappings
-// Current file preserves types and adapter seam; live endpoints throw.
+const COMMENT_ROUTE = '/api/v1/comment';
+
+export interface CommentPosition {
+  x: number;
+  y: number;
+}
 
 export interface ReviewComment {
   id: string;
@@ -15,10 +13,7 @@ export interface ReviewComment {
   author?: {
     name: string;
   };
-  position?: {
-    x: number;
-    y: number;
-  };
+  position?: CommentPosition;
 }
 
 export interface ListCommentsResponse {
@@ -26,20 +21,58 @@ export interface ListCommentsResponse {
 }
 
 export interface CreateCommentRequest {
-  shareId: string;
+  roomId: string;
   body: string;
   author?: {
     name: string;
   };
+  position?: CommentPosition;
 }
 
 export interface CreateCommentResponse {
   comment: ReviewComment;
 }
 
-export interface CommentApiError {
+export interface CreateCommentApiError {
   message: string;
   code?: string;
+  fieldErrors?: {
+    roomId?: string;
+    body?: string;
+    author?: string;
+    position?: string;
+  };
+}
+
+function normalizeCommentPosition(value: unknown): CommentPosition | undefined {
+  if (typeof value !== 'object' || value === null) {
+    return undefined;
+  }
+
+  const position = value as { x?: unknown; y?: unknown };
+
+  if (typeof position.x !== 'number' || typeof position.y !== 'number') {
+    return undefined;
+  }
+
+  return {
+    x: position.x,
+    y: position.y,
+  };
+}
+
+function normalizeAuthor(value: unknown): { name: string } | undefined {
+  if (typeof value !== 'object' || value === null) {
+    return undefined;
+  }
+
+  const author = value as { name?: unknown };
+
+  if (typeof author.name !== 'string') {
+    return undefined;
+  }
+
+  return { name: author.name };
 }
 
 function normalizeComment(data: unknown): ReviewComment {
@@ -47,7 +80,14 @@ function normalizeComment(data: unknown): ReviewComment {
     throw new Error('Comment payload was not an object.');
   }
 
-  const comment = data as Record<string, unknown>;
+  const comment = data as {
+    id?: unknown;
+    roomId?: unknown;
+    body?: unknown;
+    createdAt?: unknown;
+    author?: unknown;
+    position?: unknown;
+  };
 
   if (
     typeof comment.id !== 'string' ||
@@ -58,36 +98,14 @@ function normalizeComment(data: unknown): ReviewComment {
     throw new Error('Comment payload is missing expected fields.');
   }
 
-  const normalizedComment: ReviewComment = {
+  return {
     id: comment.id,
     roomId: comment.roomId,
     body: comment.body,
     createdAt: comment.createdAt,
+    author: normalizeAuthor(comment.author),
+    position: normalizeCommentPosition(comment.position),
   };
-
-  if (
-    typeof comment.author === 'object' &&
-    comment.author !== null &&
-    typeof (comment.author as { name?: unknown }).name === 'string'
-  ) {
-    normalizedComment.author = {
-      name: (comment.author as { name: string }).name,
-    };
-  }
-
-  if (
-    typeof comment.position === 'object' &&
-    comment.position !== null &&
-    typeof (comment.position as { x?: unknown }).x === 'number' &&
-    typeof (comment.position as { y?: unknown }).y === 'number'
-  ) {
-    normalizedComment.position = {
-      x: (comment.position as { x: number }).x,
-      y: (comment.position as { y: number }).y,
-    };
-  }
-
-  return normalizedComment;
 }
 
 function normalizeListCommentsResponse(data: unknown): ListCommentsResponse {
@@ -95,14 +113,14 @@ function normalizeListCommentsResponse(data: unknown): ListCommentsResponse {
     throw new Error('List comments response is missing the comments payload.');
   }
 
-  const comments = (data as { comments: unknown }).comments;
+  const comments = (data as { comments?: unknown }).comments;
 
   if (!Array.isArray(comments)) {
-    throw new Error('Comments payload must be an array.');
+    throw new Error('Comments payload was not an array.');
   }
 
   return {
-    comments: comments.map((comment) => normalizeComment(comment)),
+    comments: comments.map(normalizeComment),
   };
 }
 
@@ -116,7 +134,26 @@ function normalizeCreateCommentResponse(data: unknown): CreateCommentResponse {
   };
 }
 
-function normalizeCommentError(data: unknown, fallbackMessage: string): CommentApiError {
+function mapErrorCodeToFieldErrors(code?: string): CreateCommentApiError['fieldErrors'] {
+  switch (code) {
+    case 'INVALID_ROOM_ID':
+    case 'ROOM_NOT_FOUND':
+      return { roomId: 'We could not find that review room.' };
+    case 'INVALID_BODY':
+      return { body: 'Add a comment before sending.' };
+    case 'INVALID_AUTHOR':
+      return { author: 'Author name must be 1 to 80 characters.' };
+    case 'INVALID_POSITION':
+      return { position: 'Comment position must include numeric x and y coordinates.' };
+    default:
+      return undefined;
+  }
+}
+
+function normalizeCreateCommentError(
+  data: unknown,
+  fallbackMessage: string,
+): CreateCommentApiError {
   if (
     typeof data === 'object' &&
     data !== null &&
@@ -125,10 +162,13 @@ function normalizeCommentError(data: unknown, fallbackMessage: string): CommentA
     data.error !== null
   ) {
     const error = data.error as { code?: unknown; message?: unknown };
+    const code = typeof error.code === 'string' ? error.code : undefined;
+    const message = typeof error.message === 'string' ? error.message : fallbackMessage;
 
     return {
-      code: typeof error.code === 'string' ? error.code : undefined,
-      message: typeof error.message === 'string' ? error.message : fallbackMessage,
+      message,
+      code,
+      fieldErrors: mapErrorCodeToFieldErrors(code),
     };
   }
 
@@ -136,22 +176,66 @@ function normalizeCommentError(data: unknown, fallbackMessage: string): CommentA
 }
 
 export async function listComments(
-  shareId: string,
+  roomId: string,
   signal?: AbortSignal,
 ): Promise<ListCommentsResponse> {
-  // TODO: Wire to canonical list-comments endpoint.
-  // BLOCKED: endpoint path, method, and query/route param names not yet visible.
-  // Once contract is published, replace this with actual fetch call.
-  throw new Error(
-    'listComments: endpoint wiring blocked. Unblock with endpoint definition in shared/contracts/CREATE_REVIEW_SHARE_CONTRACT.md',
-  );
+  const url = new URL(COMMENT_ROUTE, window.location.origin);
+  url.searchParams.set('roomId', roomId);
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    signal,
+  });
+
+  if (!response.ok) {
+    let message = 'We could not load comments right now.';
+
+    try {
+      const data = await response.json();
+      if (
+        typeof data === 'object' &&
+        data !== null &&
+        'error' in data &&
+        typeof data.error === 'object' &&
+        data.error !== null &&
+        typeof (data.error as { message?: unknown }).message === 'string'
+      ) {
+        message = (data.error as { message: string }).message;
+      }
+    } catch {
+      // awaiting sync: backend HTTP handler may still return non-JSON errors
+    }
+
+    throw new Error(message);
+  }
+
+  const data: unknown = await response.json();
+  return normalizeListCommentsResponse(data);
 }
 
-export async function createComment(input: CreateCommentRequest): Promise<CreateCommentResponse> {
-  // TODO: Wire to canonical create-comment endpoint.
-  // BLOCKED: endpoint path, method, request body field names not yet visible.
-  // Once contract is published, replace this with actual fetch call.
-  throw new Error(
-    'createComment: endpoint wiring blocked. Unblock with endpoint definition in shared/contracts/CREATE_REVIEW_SHARE_CONTRACT.md',
-  );
+export async function createComment(
+  input: CreateCommentRequest,
+): Promise<CreateCommentResponse> {
+  const response = await fetch(COMMENT_ROUTE, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    let data: unknown;
+
+    try {
+      data = await response.json();
+    } catch {
+      // awaiting sync: backend HTTP handler may still return non-JSON errors
+    }
+
+    throw normalizeCreateCommentError(data, 'We could not save your comment right now.');
+  }
+
+  const data: unknown = await response.json();
+  return normalizeCreateCommentResponse(data);
 }

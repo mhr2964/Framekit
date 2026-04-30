@@ -1,20 +1,16 @@
-// SCAFFOLD STUB: Canonical get-room transport contract is not yet visible.
-// BLOCKED ON: Endpoint definitions in shared/contracts/CREATE_REVIEW_SHARE_CONTRACT.md
-// Required contract elements:
-//   - getRoom endpoint path, method, route/query param names (roomId vs shareId?), auth
-//   - response envelope shape (e.g., { room } vs { data } vs bare object)
-//   - error response shape and code mappings
-// Current file preserves types and normalization logic; live endpoint throws.
+const ROOM_ROUTE = '/api/v1/room';
+
+export interface ReviewRoomCreatedBy {
+  name: string;
+}
 
 export interface ReviewRoom {
   id: string;
   name: string;
   frameUrl: string;
   createdAt: string;
-  createdBy?: {
-    name: string;
-  };
   commentCount: number;
+  createdBy?: ReviewRoomCreatedBy;
 }
 
 export interface GetRoomResponse {
@@ -26,12 +22,35 @@ export interface GetRoomApiError {
   code?: string;
 }
 
+function normalizeCreatedBy(value: unknown): ReviewRoomCreatedBy | undefined {
+  if (typeof value !== 'object' || value === null) {
+    return undefined;
+  }
+
+  const createdBy = value as { name?: unknown };
+
+  if (typeof createdBy.name !== 'string') {
+    return undefined;
+  }
+
+  return {
+    name: createdBy.name,
+  };
+}
+
 function normalizeRoom(data: unknown): ReviewRoom {
   if (typeof data !== 'object' || data === null) {
     throw new Error('Room payload was not an object.');
   }
 
-  const room = data as Record<string, unknown>;
+  const room = data as {
+    id?: unknown;
+    name?: unknown;
+    frameUrl?: unknown;
+    createdAt?: unknown;
+    commentCount?: unknown;
+    createdBy?: unknown;
+  };
 
   if (
     typeof room.id !== 'string' ||
@@ -49,12 +68,7 @@ function normalizeRoom(data: unknown): ReviewRoom {
     frameUrl: room.frameUrl,
     createdAt: room.createdAt,
     commentCount: room.commentCount,
-    createdBy:
-      typeof room.createdBy === 'object' &&
-      room.createdBy !== null &&
-      typeof (room.createdBy as { name?: unknown }).name === 'string'
-        ? { name: (room.createdBy as { name: string }).name }
-        : undefined,
+    createdBy: normalizeCreatedBy(room.createdBy),
   };
 }
 
@@ -88,12 +102,23 @@ function normalizeGetRoomError(data: unknown, fallbackMessage: string): GetRoomA
 }
 
 export async function getRoom(roomId: string): Promise<GetRoomResponse> {
-  // TODO: Wire to canonical get-room endpoint.
-  // BLOCKED: endpoint path, method, and route/query param names not yet visible.
-  // Note: contract must clarify whether param is roomId or shareId.
-  // Once contract is published in shared/contracts/CREATE_REVIEW_SHARE_CONTRACT.md,
-  // replace this with actual fetch call to the defined endpoint.
-  throw new Error(
-    'getRoom: endpoint wiring blocked. Unblock with endpoint definition in shared/contracts/CREATE_REVIEW_SHARE_CONTRACT.md',
-  );
+  const response = await fetch(`${ROOM_ROUTE}/${encodeURIComponent(roomId)}`, {
+    method: 'GET',
+  });
+
+  if (!response.ok) {
+    let data: unknown;
+
+    try {
+      data = await response.json();
+    } catch {
+      // TODO: awaiting sync; backend HTTP handlers may still emit non-JSON error bodies.
+    }
+
+    const error = normalizeGetRoomError(data, 'We could not load this review room.');
+    throw new Error(error.message);
+  }
+
+  const data: unknown = await response.json();
+  return normalizeGetRoomResponse(data);
 }
