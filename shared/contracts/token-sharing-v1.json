@@ -1,0 +1,13 @@
+ARCHIVED / NON-AUTHORITATIVE
+
+Token-sharing variants are not part of the locked Framekit v1 API baseline.
+
+Do not use this file for implementation or product interpretation.
+
+Authoritative v1 API source:
+workspace/backend/api-contract.md
+
+Status:
+- archived placeholder only
+- invalid for v1 implementation
+- superseded by the locked backend contract

@@ -1,0 +1,16 @@
+ARCHIVED / NON-AUTHORITATIVE
+
+This shared placeholder is not the source of truth for Framekit v1.
+
+The only authoritative v1 API contract is:
+workspace/backend/api-contract.md
+
+Reason:
+- share-link routes and related variants were deferred
+- the v1 API baseline is locked to the backend contract's 4 routes
+- this file must not be used for implementation, docs, or QA decisions
+
+Status:
+- archived for reference only
+- superseded by workspace/backend/api-contract.md
+- any token-sharing or share-link interpretation here is invalid for v1

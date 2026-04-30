@@ -1,3 +1,13 @@
-DEPRECATED: Share-link routes deferred to v1.1. Use api-contract.md instead.
+DEPRECATED / ARCHIVED
 
-This document is archived and no longer the source of truth. Refer to the locked four-route baseline in api-contract.md for current implementation.
+This document is not the source of truth for Framekit v1.
+
+Authoritative canonical contract:
+workspace/backend/api-contract.md
+
+Status:
+- archived placeholder only
+- superseded by workspace/backend/api-contract.md
+- share-link and token-sharing variants are deferred beyond v1
+
+Use the locked four-route baseline in `workspace/backend/api-contract.md` for all implementation and review decisions.

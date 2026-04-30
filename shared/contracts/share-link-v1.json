@@ -1,0 +1,13 @@
+ARCHIVED / NON-AUTHORITATIVE
+
+Share-link flows are deferred beyond Framekit v1.
+
+Do not use this file as a contract, placeholder, or planning baseline.
+
+Authoritative v1 API source:
+workspace/backend/api-contract.md
+
+Status:
+- archived placeholder only
+- invalid for v1 implementation
+- superseded by the locked backend contract

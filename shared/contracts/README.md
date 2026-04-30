@@ -1,10 +1,17 @@
-# Shared Contracts
+# Shared Contracts Status
 
-Use this directory for contract artifacts that benefit from living beside code-friendly shared assets, such as:
+This directory is reserved for shared schemas and contracts that are explicitly approved for cross-team use.
 
-- JSON schemas
-- OpenAPI fragments
-- validation schemas
-- shared protocol definitions
+## Current status
+For v1, `workspace/backend/api-contract.md` is the sole source of truth for API behavior.
 
-Human-readable canonical contract documentation should still be maintained in `workspace/docs/contracts/`.
+Do not create or rely on parallel contract definitions here unless they are copied from and traceable to the locked backend contract.
+
+## Archive policy
+Any older placeholder in this directory that mentions:
+- share-link routes
+- token-sharing
+- alternate invite/share flows
+- route counts that differ from the locked 4-route baseline
+
+must be treated as archived and non-authoritative.
