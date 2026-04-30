@@ -1,7 +1,11 @@
-// TODO: Canonical comment endpoints and request/response shapes are not yet
-// visible in the published contract. This file is a scaffold stub.
-// See: workspace/docs/contracts/ for the contract publication target.
-// Blocked on: canonical binding spec in workspace/docs/contracts/create-review-share-binding-spec.md
+// SCAFFOLD STUB: Canonical comment transport contract is not yet visible.
+// BLOCKED ON: Endpoint definitions in shared/contracts/CREATE_REVIEW_SHARE_CONTRACT.md
+// Required contract elements:
+//   - listComments endpoint path, method, query/route params, auth
+//   - createComment endpoint path, method, request body shape, auth
+//   - response envelope shape (e.g., { comments } vs { data } vs bare array)
+//   - error response shape and code mappings
+// Current file preserves types and adapter seam; live endpoints throw.
 
 export interface ReviewComment {
   id: string;
@@ -135,17 +139,19 @@ export async function listComments(
   shareId: string,
   signal?: AbortSignal,
 ): Promise<ListCommentsResponse> {
-  // TODO: Replace with canonical list-comments endpoint path once the binding
-  // spec defines the list endpoint (method, path, query params, auth).
+  // TODO: Wire to canonical list-comments endpoint.
+  // BLOCKED: endpoint path, method, and query/route param names not yet visible.
+  // Once contract is published, replace this with actual fetch call.
   throw new Error(
-    'listComments: endpoint not yet wired. Awaiting canonical contract in workspace/docs/contracts/create-review-share-binding-spec.md',
+    'listComments: endpoint wiring blocked. Unblock with endpoint definition in shared/contracts/CREATE_REVIEW_SHARE_CONTRACT.md',
   );
 }
 
 export async function createComment(input: CreateCommentRequest): Promise<CreateCommentResponse> {
-  // TODO: Replace with canonical create-comment endpoint path once the binding
-  // spec defines the create endpoint (method, path, request body shape, auth).
+  // TODO: Wire to canonical create-comment endpoint.
+  // BLOCKED: endpoint path, method, request body field names not yet visible.
+  // Once contract is published, replace this with actual fetch call.
   throw new Error(
-    'createComment: endpoint not yet wired. Awaiting canonical contract in workspace/docs/contracts/create-review-share-binding-spec.md',
+    'createComment: endpoint wiring blocked. Unblock with endpoint definition in shared/contracts/CREATE_REVIEW_SHARE_CONTRACT.md',
   );
 }

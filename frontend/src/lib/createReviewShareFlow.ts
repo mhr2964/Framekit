@@ -1,6 +1,8 @@
-// TODO: Flow-layer transport wiring is blocked pending canonical contract
-// visibility in workspace/docs/contracts/create-review-share-binding-spec.md
-// This file preserves the adapter seam but does not invoke live endpoints.
+// SCAFFOLD STUB: Flow-layer transport is blocked pending canonical contract.
+// BLOCKED ON: Endpoint definitions in shared/contracts/CREATE_REVIEW_SHARE_CONTRACT.md
+// Adapter seam: preserves mock vs. live routing; live calls currently throw.
+// Once contract is visible, replace live endpoint calls in comments.ts, createRoom.ts,
+// and getRoom.ts; this file's routing logic requires no changes.
 
 import {
   createComment,
@@ -36,8 +38,9 @@ export async function createRoomForFlow(
     return mockCreateRoom(input);
   }
 
-  // TODO: Live mode blocked on canonical create-room contract.
-  // Unblock with endpoint definition in create-review-share-binding-spec.md
+  // TODO: Live createRoom wiring blocked on contract.
+  // BLOCKED: endpoint path, method, request body field names in
+  // shared/contracts/CREATE_REVIEW_SHARE_CONTRACT.md
   return createRoom(input);
 }
 
@@ -46,8 +49,9 @@ export async function getRoomForFlow(roomId: string): Promise<FlowGetRoomRespons
     return mockGetRoom(roomId);
   }
 
-  // TODO: Live mode blocked on canonical get-room contract.
-  // Unblock with endpoint definition in create-review-share-binding-spec.md
+  // TODO: Live getRoom wiring blocked on contract.
+  // BLOCKED: endpoint path, method, param name (roomId vs shareId?), response shape in
+  // shared/contracts/CREATE_REVIEW_SHARE_CONTRACT.md
   return getRoom(roomId);
 }
 
@@ -59,8 +63,9 @@ export async function listCommentsForFlow(
     return mockListComments(roomId, signal);
   }
 
-  // TODO: Live mode blocked on canonical list-comments contract.
-  // Unblock with endpoint definition in create-review-share-binding-spec.md
+  // TODO: Live listComments wiring blocked on contract.
+  // BLOCKED: endpoint path, method, query/route params, response shape in
+  // shared/contracts/CREATE_REVIEW_SHARE_CONTRACT.md
   return listComments(roomId, signal);
 }
 
@@ -71,7 +76,9 @@ export async function createCommentForFlow(
     return mockCreateComment(input);
   }
 
-  // TODO: Live mode blocked on canonical create-comment contract.
-  // Unblock with endpoint definition in create-review-share-binding-spec.md
+  // TODO: Live createComment wiring blocked on contract.
+  // BLOCKED: endpoint path, method, request body field names, response shape in
+  // shared/contracts/CREATE_REVIEW_SHARE_CONTRACT.md
+  // Note: input.shareId must be clarified as roomId or share-link ID in contract.
   return createComment(input);
 }
