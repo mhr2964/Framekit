@@ -1,0 +1,381 @@
+{
+  "contract": {
+    "name": "Create → Review → Share",
+    "version": "v1",
+    "status": "locked",
+    "authority": [
+      "workspace/backend/src/contracts.ts",
+      "workspace/backend/docs/api-v1.md",
+      "workspace/backend/docs/schema.md"
+    ],
+    "basePath": "/api/v1",
+    "routes": [
+      {
+        "method": "POST",
+        "path": "/api/v1/room",
+        "name": "createRoom",
+        "description": "Create a review room",
+        "request": {
+          "contentType": "application/json",
+          "schema": {
+            "type": "object",
+            "required": ["name", "frameUrl"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Room name, 1-120 characters after trimming",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "frameUrl": {
+                "type": "string",
+                "format": "uri",
+                "description": "Absolute http or https URL"
+              },
+              "createdBy": {
+                "type": "object",
+                "description": "Optional creator name; omitted if not supplied",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Creator name, 1-80 characters after trimming",
+                    "minLength": 1,
+                    "maxLength": 80
+                  }
+                }
+              }
+            }
+          }
+        },
+        "response": {
+          "status": 201,
+          "contentType": "application/json",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "room": {
+                "type": "object",
+                "required": ["id", "name", "frameUrl", "createdAt", "commentCount"],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Server-generated opaque identifier"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "frameUrl": {
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "ISO 8601 UTC timestamp"
+                  },
+                  "createdBy": {
+                    "type": "object",
+                    "description": "Omitted entirely if not supplied",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "commentCount": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Always 0 on creation"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/room/{roomId}",
+        "name": "getRoom",
+        "description": "Fetch room state for review",
+        "request": {
+          "pathParams": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "description": "Room identifier"
+            }
+          ]
+        },
+        "response": {
+          "status": 200,
+          "contentType": "application/json",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "room": {
+                "type": "object",
+                "required": ["id", "name", "frameUrl", "createdAt", "commentCount"],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "frameUrl": {
+                    "type": "string"
+                  },
+                  "createdAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "createdBy": {
+                    "type": "object",
+                    "description": "Omitted if not present",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "commentCount": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Derived from comments"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "method": "GET",
+        "path": "/api/v1/comment",
+        "name": "listComments",
+        "description": "List comments for a room",
+        "request": {
+          "queryParams": [
+            {
+              "name": "roomId",
+              "type": "string",
+              "required": true,
+              "description": "Room identifier"
+            }
+          ]
+        },
+        "response": {
+          "status": 200,
+          "contentType": "application/json",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "comments": {
+                "type": "array",
+                "description": "Comments ordered by ascending createdAt",
+                "items": {
+                  "type": "object",
+                  "required": ["id", "roomId", "body", "createdAt"],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Server-generated opaque identifier"
+                    },
+                    "roomId": {
+                      "type": "string"
+                    },
+                    "body": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 2000
+                    },
+                    "author": {
+                      "type": "object",
+                      "description": "Omitted if not supplied",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        }
+                      }
+                    },
+                    "position": {
+                      "type": "object",
+                      "description": "Omitted if not supplied; both x and y required if present",
+                      "properties": {
+                        "x": {
+                          "type": "number"
+                        },
+                        "y": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "method": "POST",
+        "path": "/api/v1/comment",
+        "name": "createComment",
+        "description": "Create a top-level comment for a room",
+        "request": {
+          "contentType": "application/json",
+          "schema": {
+            "type": "object",
+            "required": ["roomId", "body"],
+            "properties": {
+              "roomId": {
+                "type": "string",
+                "description": "Parent room identifier; must exist"
+              },
+              "body": {
+                "type": "string",
+                "description": "Comment text, 1-2000 characters after trimming",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "author": {
+                "type": "object",
+                "description": "Optional author name; omitted if not supplied",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  }
+                }
+              },
+              "position": {
+                "type": "object",
+                "description": "Optional coordinates; both x and y required if present, omitted if not supplied",
+                "properties": {
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "response": {
+          "status": 201,
+          "contentType": "application/json",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "comment": {
+                "type": "object",
+                "required": ["id", "roomId", "body", "createdAt"],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Server-generated opaque identifier"
+                  },
+                  "roomId": {
+                    "type": "string"
+                  },
+                  "body": {
+                    "type": "string"
+                  },
+                  "author": {
+                    "type": "object",
+                    "description": "Omitted if not supplied",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "position": {
+                    "type": "object",
+                    "description": "Omitted if not supplied",
+                    "properties": {
+                      "x": {
+                        "type": "number"
+                      },
+                      "y": {
+                        "type": "number"
+                      }
+                    }
+                  },
+                  "createdAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+    "errorEnvelope": {
+      "schema": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": ["code", "message"],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "INVALID_JSON",
+                  "INVALID_NAME",
+                  "INVALID_FRAME_URL",
+                  "INVALID_CREATED_BY",
+                  "ROOM_NOT_FOUND",
+                  "MISSING_ROOM_ID",
+                  "INVALID_ROOM_ID",
+                  "INVALID_BODY",
+                  "INVALID_AUTHOR",
+                  "INVALID_POSITION",
+                  "MISSING_SHARE_ID",
+                  "INVALID_SHARE_ID",
+                  "SHARE_LINK_NOT_FOUND"
+                ]
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "reserved": {
+      "description": "The following behaviors are intentionally unimplemented in the current slice and must not be inferred or implemented by frontend",
+      "items": [
+        "Share routes or share-link creation",
+        "Comment threading or nested replies",
+        "Comment edit, delete, or resolve status",
+        "Room edit or delete after creation",
+        "Room state enums (draft, active, shared, archived)",
+        "Invite, access control, or recipient model",
+        "Authentication or authorization",
+        "Idempotency or durable retry tokens"
+      ]
+    },
+    "implementation": {
+      "persistence": "Current storage is in-memory only; data is lost on process restart. This is an implementation limitation, not a feature.",
+      "optional_field_omission": "Optional fields (createdBy, author, position) are omitted entirely when not supplied; they are never sent as null.",
+      "field_normalization": "String fields are trimmed of leading/trailing whitespace before validation.",
+      "comment_ordering": "Comments are always returned in ascending order by createdAt.",
+      "comment_count": "commentCount is derived and read-only; it is incremented automatically on comment creation."
+    }
+  }
+}
