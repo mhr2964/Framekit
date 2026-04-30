@@ -1,25 +1,27 @@
-import { createShareLinkComment, SHARE_LINK_COMMENT_COLLECTION_PATH } from "./endpoints/comment";
+import {
+  COMMENT_COLLECTION_PATH,
+  createComment,
+  listComments,
+} from "./endpoints/comment";
 import {
   GetRoomParams,
   ROOM_COLLECTION_PATH,
   ROOM_ITEM_PATH,
-  SHARE_LINK_ITEM_PATH,
   createRoom,
   getRoomById,
-  getShareLinkById,
 } from "./endpoints/room";
 import {
+  getCommentRepository,
   getRoomRepository,
-  getShareLinkCommentRepository,
-  getShareLinkRepository,
 } from "./rooms-memory-store";
 import { EndpointResult } from "./contracts";
 
-export { ROOM_COLLECTION_PATH, ROOM_ITEM_PATH, SHARE_LINK_ITEM_PATH, SHARE_LINK_COMMENT_COLLECTION_PATH };
+export { ROOM_COLLECTION_PATH, ROOM_ITEM_PATH, COMMENT_COLLECTION_PATH };
 
 export interface HttpRequest {
   body?: unknown;
   params?: Record<string, string | undefined>;
+  query?: Record<string, string | undefined>;
 }
 
 export interface HttpResponse {
@@ -47,6 +49,10 @@ function getRoomParamsFromRequest(request: HttpRequest): GetRoomParams {
   };
 }
 
+function getCommentQueryFromRequest(request: HttpRequest): string {
+  return request.query?.roomId ?? "";
+}
+
 export async function handleGetRoom(request: HttpRequest): Promise<HttpResponse> {
   const repository = getRoomRepository();
   const { roomId } = getRoomParamsFromRequest(request);
@@ -55,22 +61,17 @@ export async function handleGetRoom(request: HttpRequest): Promise<HttpResponse>
   return toHttpResponse(result);
 }
 
-function getShareIdFromRequest(request: HttpRequest): string {
-  return request.params?.shareId ?? "";
-}
-
-export async function handleGetShareLink(request: HttpRequest): Promise<HttpResponse> {
-  const repository = getShareLinkRepository();
-  const shareId = getShareIdFromRequest(request);
-  const result = await getShareLinkById(repository, shareId);
+export async function handleListComments(request: HttpRequest): Promise<HttpResponse> {
+  const repository = getCommentRepository();
+  const roomId = getCommentQueryFromRequest(request);
+  const result = await listComments(repository, roomId);
 
   return toHttpResponse(result);
 }
 
-export async function handleCreateShareLinkComment(request: HttpRequest): Promise<HttpResponse> {
-  const repository = getShareLinkCommentRepository();
-  const shareId = getShareIdFromRequest(request);
-  const result = await createShareLinkComment(repository, shareId, request.body);
+export async function handleCreateComment(request: HttpRequest): Promise<HttpResponse> {
+  const repository = getCommentRepository();
+  const result = await createComment(repository, request.body);
 
   return toHttpResponse(result);
 }

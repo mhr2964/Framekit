@@ -1,4 +1,4 @@
-const SHARE_LINKS_ENDPOINT_BASE = '/api/v1/share-links';
+const COMMENTS_ENDPOINT = '/api/v1/comment';
 
 export interface ReviewComment {
   id: string;
@@ -132,17 +132,16 @@ export async function listComments(
   shareId: string,
   signal?: AbortSignal,
 ): Promise<ListCommentsResponse> {
-  const response = await fetch(
-    `${SHARE_LINKS_ENDPOINT_BASE}/${encodeURIComponent(shareId)}`,
-    {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-      },
-      cache: 'no-store',
-      signal,
+  const roomId = shareId.trim();
+
+  const response = await fetch(`${COMMENTS_ENDPOINT}?roomId=${encodeURIComponent(roomId)}`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
     },
-  );
+    cache: 'no-store',
+    signal,
+  });
 
   if (!response.ok) {
     let errorPayload: unknown = null;
@@ -157,30 +156,24 @@ export async function listComments(
   }
 
   const data: unknown = await response.json();
-
-  // TODO: Canonical retrieval is share-link scoped. Preserve `{ comments }`
-  // for the current UI by projecting nested comments from the share-link
-  // payload here if the backend response is not already comments-only.
   return normalizeListCommentsResponse(data);
 }
 
 export async function createComment(input: CreateCommentRequest): Promise<CreateCommentResponse> {
-  const response = await fetch(
-    `${SHARE_LINKS_ENDPOINT_BASE}/${encodeURIComponent(input.shareId)}/comments`,
-    {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      // TODO: Remove any remaining legacy room/share identifier duality from
-      // this payload once the canonical create-comment request body is fixed.
-      body: JSON.stringify({
-        body: input.body,
-        author: input.author,
-      }),
+  const roomId = input.shareId.trim();
+
+  const response = await fetch(COMMENTS_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
     },
-  );
+    body: JSON.stringify({
+      roomId,
+      body: input.body,
+      author: input.author,
+    }),
+  });
 
   if (!response.ok) {
     let errorPayload: unknown = null;
@@ -195,8 +188,5 @@ export async function createComment(input: CreateCommentRequest): Promise<Create
   }
 
   const data: unknown = await response.json();
-
-  // TODO: Preserve `{ comment }` for the mocked-first UI by adapting the
-  // canonical response here if backend wraps created comments differently.
   return normalizeCreateCommentResponse(data);
 }

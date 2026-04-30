@@ -2,11 +2,10 @@ import {
   Comment,
   CreateCommentRequest,
   CreateRoomRequest,
-  CreateShareLinkCommentRequest,
   Room,
   ShareLink,
 } from "./contracts";
-import { ShareLinkCommentRepository } from "./endpoints/comment";
+import { CommentRepository, ShareLinkCommentRepository } from "./endpoints/comment";
 import { RoomRepository, ShareLinkRepository } from "./endpoints/room";
 
 const ROOM_ID_PREFIX = "room_";
@@ -35,7 +34,7 @@ function normalizeCreateRoomInput(input: CreateRoomRequest): CreateRoomRequest {
   };
 }
 
-class InMemoryRoomRepository implements RoomRepository, ShareLinkRepository, ShareLinkCommentRepository {
+class InMemoryRoomRepository implements RoomRepository, ShareLinkRepository, ShareLinkCommentRepository, CommentRepository {
   private roomsById = new Map<string, Room>();
 
   private shareLinksById = new Map<string, ShareLink>();
@@ -88,7 +87,45 @@ class InMemoryRoomRepository implements RoomRepository, ShareLinkRepository, Sha
     return this.shareLinksById.get(shareId) ?? null;
   }
 
-  async createCommentForShareLink(shareId: string, input: CreateShareLinkCommentRequest): Promise<Comment | null> {
+  async roomExists(roomId: string): Promise<boolean> {
+    return this.roomsById.has(roomId);
+  }
+
+  async listCommentsByRoomId(roomId: string): Promise<Comment[]> {
+    const comments = this.commentsByRoomId.get(roomId) ?? [];
+    return [...comments];
+  }
+
+  async createComment(input: CreateCommentRequest): Promise<Comment> {
+    const room = this.roomsById.get(input.roomId);
+
+    if (!room) {
+      throw new Error("Cannot create comment for missing room");
+    }
+
+    const normalizedBody = input.body.trim();
+    const normalizedAuthorName = input.author?.name.trim();
+    const comment: Comment = {
+      id: buildEntityId(COMMENT_ID_PREFIX, this.nextCommentSequence),
+      roomId: room.id,
+      body: normalizedBody,
+      createdAt: new Date().toISOString(),
+      ...(normalizedAuthorName ? { author: { name: normalizedAuthorName } } : {}),
+      ...(input.position ? { position: input.position } : {}),
+    };
+
+    const existingComments = this.commentsByRoomId.get(room.id) ?? [];
+    this.commentsByRoomId.set(room.id, [...existingComments, comment]);
+    this.roomsById.set(room.id, {
+      ...room,
+      commentCount: room.commentCount + 1,
+    });
+    this.nextCommentSequence += 1;
+
+    return comment;
+  }
+
+  async createCommentForShareLink(shareId: string, input: CreateCommentRequest): Promise<Comment | null> {
     const shareLink = this.shareLinksById.get(shareId);
 
     if (!shareLink) {
@@ -141,5 +178,9 @@ export function getShareLinkRepository(): ShareLinkRepository {
 }
 
 export function getShareLinkCommentRepository(): ShareLinkCommentRepository {
+  return getRepositoryInstance();
+}
+
+export function getCommentRepository(): CommentRepository {
   return getRepositoryInstance();
 }

@@ -103,13 +103,22 @@ function normalizeCreateRoomError(data: unknown, fallbackMessage: string): Creat
   return { message: fallbackMessage };
 }
 
+function createCreateRoomRequestBody(payload: CreateRoomRequest) {
+  return {
+    name: payload.name,
+    frameUrl: payload.frameUrl,
+    createdBy: payload.createdBy,
+  };
+}
+
 export async function createRoom(payload: CreateRoomRequest): Promise<CreateRoomResponse> {
   const response = await fetch(CREATE_ROOM_ENDPOINT, {
     method: 'POST',
     headers: {
+      Accept: 'application/json',
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(createCreateRoomRequestBody(payload)),
   });
 
   if (!response.ok) {

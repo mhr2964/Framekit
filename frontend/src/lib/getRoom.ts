@@ -1,4 +1,4 @@
-const GET_SHARE_LINK_ENDPOINT_BASE = '/api/v1/share-links';
+const GET_ROOM_ENDPOINT_BASE = '/api/v1/room';
 
 export interface ReviewRoom {
   id: string;
@@ -81,8 +81,13 @@ function normalizeGetRoomError(data: unknown, fallbackMessage: string): GetRoomA
   return { message: fallbackMessage };
 }
 
-export async function getRoom(shareId: string): Promise<GetRoomResponse> {
-  const response = await fetch(`${GET_SHARE_LINK_ENDPOINT_BASE}/${encodeURIComponent(shareId)}`, {
+export async function getRoom(roomId: string): Promise<GetRoomResponse> {
+  const normalizedRoomId = roomId.trim();
+
+  // Adapter note: review-route params currently flow through the existing
+  // create/review adapter seam as `roomId`. Share-link lookup remains reserved
+  // until the locked share contract is available.
+  const response = await fetch(`${GET_ROOM_ENDPOINT_BASE}/${encodeURIComponent(normalizedRoomId)}`, {
     method: 'GET',
     headers: {
       Accept: 'application/json',
@@ -103,9 +108,5 @@ export async function getRoom(shareId: string): Promise<GetRoomResponse> {
   }
 
   const data: unknown = await response.json();
-
-  // TODO: Canonical backend retrieval is share-link scoped. Preserve the
-  // current `{ room }` return shape for the mocked-first review UI by adapting
-  // the share-link payload here once the live response envelope is finalized.
   return normalizeGetRoomResponse(data);
 }
